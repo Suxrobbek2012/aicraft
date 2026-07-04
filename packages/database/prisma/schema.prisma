@@ -1,0 +1,649 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../generated/client"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ──────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+  PENDING_VERIFICATION
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  ULTRA
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INCOMPLETE
+}
+
+enum MessageRole {
+  user
+  assistant
+  system
+  tool
+}
+
+enum MessageStatus {
+  pending
+  streaming
+  complete
+  error
+  cancelled
+}
+
+enum ConversationStatus {
+  active
+  archived
+  deleted
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum FileStatus {
+  pending
+  processing
+  complete
+  error
+}
+
+enum NotificationType {
+  info
+  success
+  warning
+  error
+  system
+}
+
+enum ApiKeyScope {
+  chat_read
+  chat_write
+  files_read
+  files_write
+  models_read
+  usage_read
+  admin_read
+  admin_write
+}
+
+enum JobStatus {
+  pending
+  active
+  completed
+  failed
+  delayed
+}
+
+// ─── USER ───────────────────────────────────────────────────────────────────
+
+model User {
+  id                  String     @id @default(uuid())
+  email               String     @unique
+  username            String     @unique
+  displayName         String
+  passwordHash        String?
+  avatarUrl           String?
+  role                UserRole   @default(USER)
+  status              UserStatus @default(PENDING_VERIFICATION)
+  plan                SubscriptionPlan @default(FREE)
+  isEmailVerified     Boolean    @default(false)
+  emailVerifyToken    String?    @unique
+  emailVerifyExpires  DateTime?
+  passwordResetToken  String?    @unique
+  passwordResetExpires DateTime?
+  twoFactorEnabled    Boolean    @default(false)
+  twoFactorSecret     String?
+  twoFactorBackupCodes String[]  @default([])
+  language            String     @default("en")
+  timezone            String     @default("UTC")
+  bio                 String?
+  location            String?
+  website             String?
+  tokenBalance        Int        @default(10000)
+  totalTokensUsed     BigInt     @default(0)
+  lastActiveAt        DateTime?
+  metadata            Json?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  // Relations
+  sessions            Session[]
+  oauthAccounts       OAuthAccount[]
+  settings            UserSettings?
+  subscription        Subscription?
+  conversations       Conversation[]
+  messages            Message[]
+  files               File[]
+  memories            Memory[]
+  apiKeys             ApiKey[]
+  notifications       Notification[]
+  workspaceMemberships WorkspaceMember[]
+  ownedWorkspaces     Workspace[]      @relation("WorkspaceOwner")
+  usageRecords        UsageRecord[]
+  tokenTransactions   TokenTransaction[]
+  pluginInstalls      PluginInstall[]
+  conversationFolders ConversationFolder[]
+
+  @@index([email])
+  @@index([username])
+  @@index([role])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  refreshToken String   @unique
+  deviceInfo   String?
+  ipAddress    String?
+  userAgent    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([refreshToken])
+  @@index([expiresAt])
+}
+
+model OAuthAccount {
+  id             String   @id @default(uuid())
+  userId         String
+  provider       String
+  providerUserId String
+  email          String?
+  displayName    String?
+  avatarUrl      String?
+  accessToken    String?
+  refreshToken   String?
+  expiresAt      DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+}
+
+model UserSettings {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  theme             String   @default("dark")
+  language          String   @default("en")
+  defaultModel      String   @default("gpt-4o")
+  defaultProvider   String   @default("openai")
+  streamResponses   Boolean  @default(true)
+  soundEnabled      Boolean  @default(false)
+  autoTitle         Boolean  @default(true)
+  compactMode       Boolean  @default(false)
+  codeTheme         String   @default("vs-dark")
+  fontSize          String   @default("md")
+  sendOnEnter       Boolean  @default(true)
+  showTokenCount    Boolean  @default(true)
+  ttsEnabled        Boolean  @default(false)
+  ttsVoice          String   @default("alloy")
+  ttsSpeed          Float    @default(1.0)
+  sttEnabled        Boolean  @default(false)
+  memoryEnabled     Boolean  @default(true)
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── SUBSCRIPTION ────────────────────────────────────────────────────────────
+
+model Subscription {
+  id                     String             @id @default(uuid())
+  userId                 String             @unique
+  plan                   SubscriptionPlan   @default(FREE)
+  status                 SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId        String?            @unique
+  stripeSubscriptionId    String?            @unique
+  stripePriceId           String?
+  currentPeriodStart     DateTime           @default(now())
+  currentPeriodEnd       DateTime
+  cancelAtPeriodEnd      Boolean            @default(false)
+  canceledAt             DateTime?
+  trialStart             DateTime?
+  trialEnd               DateTime?
+  metadata               Json?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+  @@index([status])
+}
+
+// ─── CONVERSATIONS ────────────────────────────────────────────────────────────
+
+model ConversationFolder {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  color     String?
+  icon      String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+
+  @@index([userId])
+}
+
+model Conversation {
+  id              String             @id @default(uuid())
+  userId          String
+  workspaceId     String?
+  folderId        String?
+  title           String             @default("New Conversation")
+  summary         String?
+  model           String             @default("gpt-4o")
+  provider        String             @default("openai")
+  systemPrompt    String?
+  status          ConversationStatus @default(active)
+  isPinned        Boolean            @default(false)
+  isShared        Boolean            @default(false)
+  shareToken      String?            @unique
+  tags            String[]           @default([])
+  messageCount    Int                @default(0)
+  tokenCount      Int                @default(0)
+  lastMessageAt   DateTime?
+  metadata        Json?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace  Workspace?          @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  folder     ConversationFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  messages   Message[]
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@index([status])
+  @@index([lastMessageAt])
+  @@index([shareToken])
+}
+
+model Message {
+  id             String        @id @default(uuid())
+  conversationId String
+  userId         String
+  role           MessageRole
+  content        String
+  contentParts   Json?
+  status         MessageStatus @default(complete)
+  model          String?
+  provider       String?
+  inputTokens    Int?
+  outputTokens   Int?
+  totalTokens    Int?
+  latencyMs      Int?
+  finishReason   String?
+  toolCalls      Json?
+  toolResults    Json?
+  parentId       String?
+  editedAt       DateTime?
+  metadata       Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  conversation Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attachments  MessageAttachment[]
+  parent       Message?          @relation("MessageThread", fields: [parentId], references: [id])
+  children     Message[]         @relation("MessageThread")
+
+  @@index([conversationId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([role])
+}
+
+model MessageAttachment {
+  id               String     @id @default(uuid())
+  messageId        String
+  fileId           String
+  createdAt        DateTime   @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  file    File    @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, fileId])
+  @@index([messageId])
+  @@index([fileId])
+}
+
+// ─── FILES ────────────────────────────────────────────────────────────────────
+
+model File {
+  id               String     @id @default(uuid())
+  userId           String
+  name             String
+  originalName     String
+  mimeType         String
+  size             Int
+  storageKey       String
+  storageProvider  String     @default("local")
+  publicUrl        String?
+  status           FileStatus @default(pending)
+  extractedText    String?
+  ocrText          String?
+  embedding        Float[]
+  metadata         Json?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attachments MessageAttachment[]
+
+  @@index([userId])
+  @@index([mimeType])
+  @@index([status])
+}
+
+// ─── MEMORY ───────────────────────────────────────────────────────────────────
+
+model Memory {
+  id            String   @id @default(uuid())
+  userId        String
+  workspaceId   String?
+  content       String
+  summary       String
+  embedding     Float[]
+  importance    Float    @default(0.5)
+  accessCount   Int      @default(0)
+  lastAccessedAt DateTime?
+  sourceType    String   @default("conversation")
+  sourceId      String?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@index([importance])
+}
+
+// ─── WORKSPACE ────────────────────────────────────────────────────────────────
+
+model Workspace {
+  id          String  @id @default(uuid())
+  name        String
+  slug        String  @unique
+  description String?
+  avatarUrl   String?
+  ownerId     String
+  isPersonal  Boolean @default(false)
+  settings    Json    @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner         User              @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  members       WorkspaceMember[]
+  invites       WorkspaceInvite[]
+  conversations Conversation[]
+  apiKeys       ApiKey[]
+
+  @@index([ownerId])
+  @@index([slug])
+}
+
+model WorkspaceMember {
+  id          String        @id @default(uuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole @default(MEMBER)
+  invitedBy   String?
+  joinedAt    DateTime      @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+}
+
+model WorkspaceInvite {
+  id          String        @id @default(uuid())
+  workspaceId String
+  email       String
+  role        WorkspaceRole @default(MEMBER)
+  token       String        @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdBy   String
+  createdAt   DateTime      @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, email])
+  @@index([token])
+  @@index([email])
+}
+
+// ─── API KEYS ─────────────────────────────────────────────────────────────────
+
+model ApiKey {
+  id               String        @id @default(uuid())
+  userId           String
+  workspaceId      String?
+  name             String
+  keyHash          String        @unique
+  keyPrefix        String
+  scopes           ApiKeyScope[] @default([chat_read, chat_write])
+  rateLimit        Int           @default(60)
+  rateLimitWindow  Int           @default(60)
+  totalRequests    BigInt        @default(0)
+  lastUsedAt       DateTime?
+  expiresAt        DateTime?
+  isActive         Boolean       @default(true)
+  metadata         Json?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([keyHash])
+  @@index([isActive])
+}
+
+// ─── USAGE & BILLING ─────────────────────────────────────────────────────────
+
+model UsageRecord {
+  id             String   @id @default(uuid())
+  userId         String
+  conversationId String?
+  messageId      String?
+  model          String
+  provider       String
+  inputTokens    Int
+  outputTokens   Int
+  totalTokens    Int
+  costUsd        Float
+  period         String   // YYYY-MM-DD
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([period])
+  @@index([model])
+  @@index([createdAt])
+}
+
+model TokenTransaction {
+  id          String   @id @default(uuid())
+  userId      String
+  amount      Int
+  type        String   // credit | debit | refund | purchase | bonus
+  description String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType @default(info)
+  title     String
+  body      String
+  link      String?
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+  metadata  Json?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// ─── AI MODELS CONFIG ─────────────────────────────────────────────────────────
+
+model AIModelConfig {
+  id                   String   @id @default(uuid())
+  modelId              String   @unique
+  name                 String
+  provider             String
+  contextWindow        Int
+  maxOutputTokens      Int
+  supportsVision       Boolean  @default(false)
+  supportsTools        Boolean  @default(false)
+  supportsStreaming     Boolean  @default(true)
+  inputPricePerMillion Float    @default(0)
+  outputPricePerMillion Float   @default(0)
+  isEnabled            Boolean  @default(true)
+  isDefault            Boolean  @default(false)
+  capabilities         String[] @default([])
+  description          String?
+  order                Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([provider])
+  @@index([isEnabled])
+}
+
+// ─── PLUGINS ──────────────────────────────────────────────────────────────────
+
+model Plugin {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String
+  version     String
+  author      String?
+  iconUrl     String?
+  manifest    Json
+  isOfficial  Boolean  @default(false)
+  isEnabled   Boolean  @default(true)
+  installs    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  installs_rel PluginInstall[]
+
+  @@index([slug])
+  @@index([isEnabled])
+}
+
+model PluginInstall {
+  id        String   @id @default(uuid())
+  userId    String
+  pluginId  String
+  settings  Json?
+  isEnabled Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plugin Plugin @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pluginId])
+  @@index([userId])
+}
+
+// ─── AUDIT LOG ───────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String
+  resource   String
+  resourceId String?
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+}
+
+// ─── SYSTEM CONFIG ────────────────────────────────────────────────────────────
+
+model SystemConfig {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  type      String   @default("string")
+  group     String   @default("general")
+  isPublic  Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@index([key])
+  @@index([group])
+}

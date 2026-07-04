@@ -1,0 +1,40 @@
+{
+  "name": "go-ai",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev:api & npm run dev:web",
+    "dev:api": "cd apps/api && npm run dev --silent",
+    "dev:web": "cd apps/web && npm run dev --silent",
+    "build": "npm run build:shared && npm run build:api && npm run build:web",
+    "build:shared": "npm run build --workspace=@go-ai/shared",
+    "build:api": "npm run build --workspace=@go-ai/api",
+    "build:web": "npm run build --workspace=@go-ai/web",
+    "start": "npm run start:web",
+    "start:web": "cd apps/web && npm run start --silent",
+    "lint": "npm run lint:web",
+    "lint:web": "cd apps/web && npm run lint --silent"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.0.0",
+    "eslint": "^8.57.0"
+  },
+  "overrides": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0"
+  }
+}
+
