@@ -2,6 +2,7 @@
   "name": "go-ai",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "npm@10.8.2",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -10,10 +11,14 @@
     "dev": "npm run dev:api & npm run dev:web",
     "dev:api": "cd apps/api && npm run dev --silent",
     "dev:web": "cd apps/web && npm run dev --silent",
-    "build": "npm run build:shared && npm run build:api && npm run build:web",
+    "build": "npm run build:shared && npm run build:ai-core && npm run build:database && npm run build:api && npm run build:web",
     "build:shared": "npm run build --workspace=@go-ai/shared",
+    "build:ai-core": "npm run build --workspace=@go-ai/ai-core",
+    "build:database": "prisma generate --schema=packages/database/prisma/schema.prisma && npm run build --workspace=@go-ai/database",
     "build:api": "npm run build --workspace=@go-ai/api",
     "build:web": "npm run build --workspace=@go-ai/web",
+    "db:migrate": "npm run db:migrate --workspace=@go-ai/database",
+    "db:generate": "npm run db:generate --workspace=@go-ai/database",
     "start": "npm run start:web",
     "start:web": "cd apps/web && npm run start --silent",
     "lint": "npm run lint:web",

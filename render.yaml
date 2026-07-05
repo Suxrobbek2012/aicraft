@@ -1,0 +1,46 @@
+services:
+  # ─── Backend API ────────────────────────────────────────────
+  - type: web
+    name: aicraft-api
+    runtime: node
+    region: oregon
+    rootDir: apps/api
+    buildCommand: cd ../.. && npm install && npm run build:shared && npm run build:ai-core && npm run build:database && npm run build:api
+    startCommand: node dist/server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: HOST
+        value: 0.0.0.0
+      # Quyidagilarni Render dashboard da qo'shing:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_API_KEY_2
+        sync: false
+      - key: GROQ_API_KEY_3
+        sync: false
+      - key: GROQ_API_KEY_4
+        sync: false
+      - key: GROQ_API_KEY_5
+        sync: false
+      - key: GROQ_API_KEY_6
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: API_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
