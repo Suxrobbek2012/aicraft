@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODELS_DIR="$SCRIPT_DIR/.ollama-models"
 MODEL_NAME="llama3.2:3b"
 CUSTOM_MODEL="uz-chat"
-PORT="3010"
+PORT="3011"
 
 log() {
   echo "[$(date '+%H:%M:%S')] $*"

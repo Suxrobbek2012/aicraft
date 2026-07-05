@@ -1,5 +1,5 @@
 // ============================================================
-// O'ZBEK TILI UCHUN MAXSUS CHAT SERVICE - EMOJI VA KAYFIYAT BILAN
+// AICRAFT CHAT SERVICE - PRO FULL-STACK CODER + EMOJI/KAYFIYAT
 // ============================================================
 
 import type { PrismaClient } from '@go-ai/database'
@@ -25,13 +25,13 @@ import {
 import { cacheGet, cacheSet, CACHE_PREFIX } from '../lib/redis'
 import { SearchService } from './search.service'
 import { getRelevantMemories } from './memory.service'
+import { groqKeyManager } from '../lib/groq-key-manager'
 
 // ============================================================
 // 1. EMOJI VA KAYFIYAT KLASSI
 // ============================================================
 
 class EmojiMoodManager {
-  // Turli kayfiyatlar uchun emojilar
   private emojis = {
     greeting: ['👋', '😊', '✨', '🌟', '💫', '🤗'],
     happy: ['😄', '🎉', '🥳', '💪', '🔥', '⭐', '🌈'],
@@ -54,65 +54,46 @@ class EmojiMoodManager {
     tech: ['💻', '🖥️', '📱', '⌨️', '🖱️', '🤖'],
   }
 
-  // Xabarga mos emoji tanlash
   getEmoji(text: string, mood: string = 'neutral'): string {
     const lowerText = text.toLowerCase()
-    
-    // Salomlashish
+
     if (lowerText.includes('salom') || lowerText.includes('assalom') || lowerText.includes('hey')) {
       return this.randomFrom('greeting')
     }
-    
-    // Yaxshi, ajoyib
     if (lowerText.includes('yaxshi') || lowerText.includes('ajoyib') || lowerText.includes('zoʻr') || lowerText.includes('zo\'r')) {
       return this.randomFrom('happy')
     }
-    
-    // Rahmat
     if (lowerText.includes('rahmat') || lowerText.includes('tashakkur')) {
       return this.randomFrom('love')
     }
-    
-    // Savol
     if (lowerText.includes('?') || lowerText.includes('qanday') || lowerText.includes('nima') || lowerText.includes('kim')) {
       return this.randomFrom('question')
     }
-    
-    // Kulgili
     if (lowerText.includes('😂') || lowerText.includes('😆') || lowerText.includes('🤣')) {
       return this.randomFrom('funny')
     }
-    
-    // Dasturlash, kod
     if (lowerText.includes('kod') || lowerText.includes('code') || lowerText.includes('program') || lowerText.includes('api')) {
       return this.randomFrom('tech')
     }
-    
-    // Ish
     if (lowerText.includes('ish') || lowerText.includes('vazifa') || lowerText.includes('loyiha')) {
       return this.randomFrom('work')
     }
-    
+
     return this.randomFrom('cool')
   }
 
-  // Kayfiyatga mos emoji
   getMoodEmoji(mood: 'happy' | 'sad' | 'thinking' | 'cool' | 'love' | 'funny'): string {
     return this.randomFrom(mood)
   }
 
-  // Tasodifiy emoji olish
   private randomFrom(category: keyof typeof this.emojis | string): string {
     const emojiList = this.emojis[category as keyof typeof this.emojis] || this.emojis.cool
     return emojiList[Math.floor(Math.random() * emojiList.length)]
   }
 
-  // Matnga emoji qo'shish
   addEmojis(text: string, mood: string = 'neutral'): string {
-    // Agar matnda emoji bo'lmasa
     if (!text.match(/[\u{1F600}-\u{1F6FF}]/u)) {
       const emoji = this.getEmoji(text, mood)
-      // Jumla oxiriga emoji qo'shish
       const trimmed = text.trim()
       const punctuation = trimmed.match(/[.!?…]+$/)
       if (punctuation) {
@@ -123,10 +104,9 @@ class EmojiMoodManager {
     return text
   }
 
-  // Kayfiyat aniqlash
   detectMood(text: string): 'happy' | 'sad' | 'thinking' | 'cool' | 'love' | 'funny' {
     const lowerText = text.toLowerCase()
-    
+
     if (lowerText.includes('yaxshi') || lowerText.includes('ajoyib') || lowerText.includes('zoʻr') || lowerText.includes('zo\'r')) {
       return 'happy'
     }
@@ -145,13 +125,14 @@ class EmojiMoodManager {
     if (lowerText.includes('😔') || lowerText.includes('💔') || lowerText.includes('yomon')) {
       return 'sad'
     }
-    
+
     return 'cool'
   }
 }
 
 // ============================================================
-// 2. O'ZBEK TILI FILTR VA TOZALASH KLASSI (EMOJI BILAN)
+// 2. O'ZBEK TILI FILTR VA TOZALASH KLASSI
+// Faqat oddiy suhbat (coding bo'lmagan) uchun ishlatiladi
 // ============================================================
 
 class UzbekConversationFilter {
@@ -161,7 +142,6 @@ class UzbekConversationFilter {
     this.emojiManager = new EmojiMoodManager()
   }
 
-  // Shablonli va keraksiz iboralarni olib tashlash
   removeTemplates(text: string): string {
     const templates = [
       /Assalomu alaykum!\s*/gi,
@@ -179,13 +159,12 @@ class UzbekConversationFilter {
       /Endi buni tahlil qiladigan boʻlsak\.\.\.\s*/gi,
       /Tushundingizmi, aslida\.\.\.\s*/gi,
     ]
-    
+
     let result = text
     for (const template of templates) {
       result = result.replace(template, '')
     }
-    
-    // Agar bo'sh bo'lib qolsa, oddiy javob
+
     if (!result.trim()) {
       const simpleReplies = [
         'Salom! 👋',
@@ -197,11 +176,10 @@ class UzbekConversationFilter {
       ]
       return simpleReplies[Math.floor(Math.random() * simpleReplies.length)]
     }
-    
+
     return result.trim()
   }
 
-  // Qisqa va lo'nda javob
   simplifyResponse(text: string): string {
     if (text.length > 300) {
       const sentences = text.split(/[.!?]+/).filter(s => s.trim())
@@ -212,7 +190,6 @@ class UzbekConversationFilter {
     return text
   }
 
-  // Takrorlanuvchi so'zlarni olib tashlash
   removeRedundancies(text: string): string {
     const redundancies = [
       { from: /\b(menimcha|aslida|umuman olganda|rostini aytsam)\s+,\s*(menimcha|aslida|umuman olganda|rostini aytsam)/gi, to: '$1' },
@@ -229,11 +206,9 @@ class UzbekConversationFilter {
     return result
   }
 
-  // Tabiiy javobga o'tkazish (EMOJI BILAN)
   naturalize(text: string): string {
     const lowerText = text.toLowerCase()
-    
-    // Salom
+
     if (lowerText.includes('salom') && text.length < 50) {
       const replies = [
         'Salom! 👋',
@@ -246,7 +221,6 @@ class UzbekConversationFilter {
       return replies[Math.floor(Math.random() * replies.length)]
     }
 
-    // Yaxshi
     if (lowerText.includes('yaxshi') && text.length < 30) {
       const replies = [
         'Yaxshi ekan! 👍',
@@ -258,7 +232,6 @@ class UzbekConversationFilter {
       return replies[Math.floor(Math.random() * replies.length)]
     }
 
-    // Rahmat
     if (lowerText.includes('rahmat') || lowerText.includes('tashakkur')) {
       const replies = [
         'Rahmat! ❤️',
@@ -269,7 +242,6 @@ class UzbekConversationFilter {
       return replies[Math.floor(Math.random() * replies.length)]
     }
 
-    // Hisob-kitob
     if (lowerText.includes('+') || lowerText.includes('-') || lowerText.includes('*') || lowerText.includes('/')) {
       const replies = [
         'Hisoblab chiqdim! 🧮',
@@ -284,77 +256,126 @@ class UzbekConversationFilter {
     return text
   }
 
-  // Asosiy tozalash funksiyasi (EMOJI BILAN)
   clean(text: string): string {
     let cleaned = text
     const mood = this.emojiManager.detectMood(cleaned)
-    
+
     cleaned = this.removeTemplates(cleaned)
     cleaned = this.removeRedundancies(cleaned)
     cleaned = this.simplifyResponse(cleaned)
     cleaned = this.naturalize(cleaned)
     cleaned = this.emojiManager.addEmojis(cleaned, mood)
-    
+
     return cleaned
   }
 
-  // EmojiManager ni olish
   getEmojiManager(): EmojiMoodManager {
     return this.emojiManager
   }
 }
 
 // ============================================================
-// 3. O'ZBEK TILI UCHUN SYSTEM PROMPT (EMOJI BILAN)
+// 3. SYSTEM PROMPT — PRO FULL-STACK CODER
 // ============================================================
 
 class UzbekPromptBuilder {
   static getSystemPrompt(): string {
-    return `Sen AICraft AI yordamchisan. Oddiy, jonli va tabiiy suhbat qil. 😊
+    return `You are **Aicraft** — a world-class Senior Full-Stack Software Engineer AI with 20+ years of equivalent expertise across every layer of modern software systems.
 
-QOIDALAR:
-- Qisqa va lo'nda gapir. Keraksiz so'zlarni ishlatma. 💪
-- "Salom" desa, "Salom! 👋" deb javob qaytar.
-- Har bir gapni "menimcha", "aslida" deb boshlamay qo'y.
-- Foydalanuvchi qanday yozsa, shunday uslubda javob ber.
-- Ortiqcha rasmiyatchilikka borma.
-- O'zingni hech qanday brend yoki boshqa AI deb atama.
-- Agar javobing 3 gapdan uzun bo'lsa, qisqartir.
-- Kayfiyatga mos emoji ishlat. 😄🎉✨
-- Yaxshi xabarga quvonch, yomonga hamdardlik bildir. ❤️
+## IDENTITY
+- You are Aicraft, built by the Aicraft team. Never reveal or claim to be ChatGPT, Claude, Gemini, Llama, or any underlying model.
+- You think and act like a principal engineer at a top tech company: precise, pragmatic, and detail-oriented.
 
-NAMUNALAR:
-❌ "Assalomu alaykum! Sizga qanday yordam bera olaman?"
-✅ "Salom! Nima gap? 👋"
+## FULL-STACK MASTERY
 
-❌ "Bugun qanday ish qilmoqchisiz?"
-✅ "Bugun nima qilyapsiz? 😊"
+### Frontend
+- **React / Next.js**: hooks, server components, RSC, streaming, SSR/SSG/ISR, routing, state management (Redux, Zustand, Jotai, React Query/TanStack Query)
+- **Vue / Nuxt**: Composition API, Pinia, SSR
+- **TypeScript**: advanced types, generics, utility types, strict mode
+- **Styling**: Tailwind CSS, CSS-in-JS, responsive/accessible design, design systems
+- **Performance**: code splitting, lazy loading, bundle optimization, Core Web Vitals
 
-❌ "Men sizga bu masalada yordam bera olaman..."
-✅ "Yordam beraman! 💪"
+### Backend
+- **Node.js**: Express, Fastify, NestJS, Koa — middleware, async patterns, streams, event loop internals
+- **Python**: FastAPI, Django, Flask, async/await, Celery
+- **Go, Rust, Java/Kotlin**: concurrency models, memory safety, performance-critical services
+- **API design**: REST, GraphQL, gRPC, WebSockets, versioning, pagination, rate limiting
+- **Auth & Security**: JWT, OAuth2, session management, OWASP Top 10, input sanitization, secure headers
 
-❌ "Bu juda muhim savol..."
-✅ "Qiziq savol! 🤔"
+### Databases & Data
+- **SQL**: PostgreSQL, MySQL — indexing, query optimization, transactions, migrations
+- **NoSQL**: MongoDB, Redis — caching strategies, data modeling
+- **ORMs**: Prisma, TypeORM, Drizzle, SQLAlchemy
 
-Oddiy suhbatdosh bo'l. Shablonli javoblardan qoch. 
-O'zbek tilida erkin va tabiiy gapir. 🔥`
+### Infra & DevOps
+- Docker, Kubernetes, CI/CD pipelines (GitHub Actions, GitLab CI)
+- Nginx, load balancing, reverse proxies
+- AWS / GCP / Azure — serverless, containers, storage, queues (SQS, BullMQ, RabbitMQ, Kafka)
+- Monitoring, logging, observability (Prometheus, Grafana, Sentry)
+
+### Mobile
+- React Native, Flutter — native modules, performance tuning
+
+### AI/ML Integration
+- LLM APIs (OpenAI, Anthropic, Groq), RAG pipelines, vector databases (Pinecone, pgvector, Qdrant), prompt engineering, streaming responses
+
+## ENGINEERING DISCIPLINE
+When solving any problem, you ALWAYS:
+1. **Clarify scope silently** — if requirements are ambiguous, make the most reasonable senior-engineer assumption and state it in one line, then proceed.
+2. **Think before coding** — briefly outline the approach (2-4 bullet points max) before writing code, especially for non-trivial features.
+3. **Write complete, production-ready code** — no placeholders, no "// TODO: implement this", no pseudocode unless explicitly asked for pseudocode.
+4. **Handle edge cases** — null checks, empty states, race conditions, network failures, concurrent access.
+5. **Follow SOLID, DRY, and clean architecture** — separate concerns (controller/service/repository layers), avoid god-classes.
+6. **Security-first mindset** — sanitize inputs, avoid SQL/NoSQL injection, avoid leaking secrets, validate on both client and server.
+7. **Consider performance & scale** — Big-O awareness, avoid N+1 queries, use indexes, cache where appropriate.
+8. **Type safety** — use TypeScript strict types, avoid \`any\` unless truly necessary.
+
+## CODE OUTPUT FORMAT
+- Always specify the language in code blocks.
+- For multi-file changes, prefix each block with the file path as a comment (e.g. \`// src/services/user.service.ts\`).
+- For edits to existing code, show only the changed section with enough surrounding context to locate it — don't reprint entire unchanged files unless asked.
+- After code, briefly explain *what* changed and *why* — not a line-by-line narration.
+
+## BUG FIXING PROTOCOL
+1. Identify the root cause (not just the symptom).
+2. Explain briefly why it happens.
+3. Provide the fix.
+4. Mention any related risks the fix might introduce.
+
+## CODE REVIEW PROTOCOL
+When reviewing code, structure feedback as:
+- 🔴 Critical (bugs, security holes, data loss risks)
+- 🟡 Should fix (performance, maintainability)
+- 🟢 Nice to have (style, minor readability)
+
+## COMMUNICATION STYLE
+- Match the user's language (uz/ru/en) for explanations.
+- Always write code, variable names, comments in English regardless of the conversation language.
+- Be direct — no filler phrases like "Great question!" or "Let's dive in."
+- Lead with the answer/code, then explain briefly.
+- Use numbered steps for sequences, bullets for lists.
+
+You are the most technically rigorous coding assistant available. Every response should be something a senior engineer would approve in a code review without changes.`
   }
 
-  static getStylePrompt(): string {
-    return `Tabiiy va erkin suhbat qil. O'zbek tilida jonli gapir. Kayfiyatga mos emoji ishlat. 😊✨🎉 Keraksiz gaplarni tashla.`
+  static getStylePrompt(isCodingIntent: boolean): string {
+    if (isCodingIntent) {
+      return `Coding mode: be precise, technical, and complete. No emojis in code explanations. No filler. Production-quality code only.`
+    }
+    return `Casual mode: be warm and conversational. Light emoji use is fine for mood (uz/ru/en depending on user's language).`
   }
 
   static getRussianPrompt(): string {
-    return `Ты AICraft, AI-ассистент. Отвечай просто и естественно. Используй эмодзи для настроения. 😊🎉✨ Коротко и по делу.`
+    return `Ты Aicraft — старший full-stack инженер уровня senior/principal с экспертизой во frontend (React/Next.js/Vue/TypeScript), backend (Node.js/Python/Go/Rust/Java), базах данных (PostgreSQL/MongoDB/Redis), DevOps (Docker/Kubernetes/CI-CD) и мобильной разработке (React Native/Flutter). Пиши полный, рабочий, production-ready код с обработкой ошибок и edge-кейсов. Объясняй кратко и по делу, без воды.`
   }
 
   static getEnglishPrompt(): string {
-    return `You are AICraft, an AI assistant. Reply simply and naturally. Use emojis for mood. 😊🎉✨ Keep it short and to the point.`
+    return `You are Aicraft — a senior/principal-level full-stack engineer with deep expertise across frontend (React/Next.js/Vue/TypeScript), backend (Node.js/Python/Go/Rust/Java), databases (PostgreSQL/MongoDB/Redis), DevOps (Docker/Kubernetes/CI-CD), and mobile (React Native/Flutter). Write complete, production-ready code with proper error handling and edge-case coverage. Be direct and precise.`
   }
 }
 
 // ============================================================
-// 4. ASOSIY CHAT SERVICE KLASSI (EMOJI BILAN)
+// 4. ASOSIY CHAT SERVICE KLASSI
 // ============================================================
 
 export class ChatService {
@@ -371,24 +392,38 @@ export class ChatService {
   }
 
   // ============================================================
-  // 5. SYSTEM PROMPT METODI
+  // 5. SYSTEM / STYLE PROMPT METODLARI
   // ============================================================
 
   private getSystemPrompt(language: string = 'uz'): string {
-    if (language === 'uz') {
-      return UzbekPromptBuilder.getSystemPrompt()
-    }
     if (language === 'ru') {
       return UzbekPromptBuilder.getRussianPrompt()
     }
-    return UzbekPromptBuilder.getEnglishPrompt()
+    if (language === 'en') {
+      return UzbekPromptBuilder.getEnglishPrompt()
+    }
+    return UzbekPromptBuilder.getSystemPrompt()
   }
 
-  private getStylePrompt(language: string = 'uz'): string {
-    if (language === 'uz') {
-      return UzbekPromptBuilder.getStylePrompt()
-    }
-    return 'Be natural and conversational. Use emojis for mood. 😊✨🎉'
+  private getStylePrompt(isCodingIntent: boolean): string {
+    return UzbekPromptBuilder.getStylePrompt(isCodingIntent)
+  }
+
+  // ============================================================
+  // 5b. CODING-INTENT ANIQLASH
+  // ============================================================
+
+  private detectCodingIntent(text: string): boolean {
+    const codingSignals = [
+      /```/,
+      /\b(function|const|let|var|class|import|export|async|await|interface|type)\b/i,
+      /\b(bug|error|xato|xatolik|fix|debug|refactor)\b/i,
+      /\b(api|endpoint|database|sql|query|schema|migration)\b/i,
+      /\b(kod|dastur|funksiya|metod|klass|frontend|backend)\b/i,
+      /\.(js|ts|tsx|jsx|py|go|rs|java|sql|json|yaml|yml)\b/i,
+      /\b(react|next\.?js|vue|node\.?js|express|fastify|nestjs|django|fastapi|docker|kubernetes)\b/i,
+    ]
+    return codingSignals.some((pattern) => pattern.test(text))
   }
 
   // ============================================================
@@ -403,13 +438,13 @@ export class ChatService {
       // ─── 1. Validate user ─────────────────────────────────────────
       const user = await this.prisma.user.findUnique({
         where: { id: userId },
-        select: { 
-          id: true, 
-          plan: true, 
-          status: true, 
-          tokenBalance: true, 
+        select: {
+          id: true,
+          plan: true,
+          status: true,
+          tokenBalance: true,
           settings: true,
-          language: true 
+          language: true
         },
       })
 
@@ -455,16 +490,13 @@ export class ChatService {
         // Use default
       }
 
+      // ─── 3b. Detect coding intent (temperature/maxTokens/style uchun) ──
+      const isCoding = this.detectCodingIntent(input.content)
+
       // ─── 4. Resolve model & provider ────────────────────────────
       const userSettings = user.settings as any || {}
-      let provider = (input.provider ?? userSettings.defaultProvider ?? 'ollama') as AIProvider
-      let model = input.model ?? userSettings.defaultModel ?? 'llama3.2:3b'
-
-      // O'zbek tili uchun modelni o'zgartirish
-      if (model === 'llama3.2:1b' && detectedLanguage === 'uz') {
-        model = 'llama3.2:3b'
-        this.app.log.info('O\'zbek tili uchun model o\'zgartirildi: llama3.2:3b')
-      }
+      let provider = (input.provider ?? userSettings.defaultProvider ?? 'groq') as AIProvider
+      let model = input.model ?? userSettings.defaultModel ?? 'llama-3.3-70b-versatile'
 
       if (!this.ai.has(provider)) {
         const available = await this.ai.getAvailableProviders()
@@ -483,7 +515,7 @@ export class ChatService {
         try {
           const models = await aiProvider.listModels().catch(() => [])
           if (models.length > 0) {
-            const modelExists = models.some((m: string) => 
+            const modelExists = models.some((m: string) =>
               m.includes(model) || model.includes(m.replace('ollama/', ''))
             )
             if (!modelExists) {
@@ -507,7 +539,8 @@ export class ChatService {
       })
 
       if (!isModelAllowed) {
-        model = allowedModels[0]?.replace('ollama/', '') || 'llama3.2:3b'
+        model = 'llama-3.3-70b-versatile'
+        provider = 'groq' as AIProvider
       }
 
       // ─── 5. Resolve or create conversation ──────────────────────
@@ -537,23 +570,23 @@ export class ChatService {
       const historyMessages = await this.prisma.message.findMany({
         where: { conversationId, status: 'complete' },
         orderBy: { createdAt: 'asc' },
-        take: 80,
+        take: 20,
         include: { attachments: { include: { file: true } } },
       })
 
       // ─── 7. Build AI messages ────────────────────────────────────
       const aiMessages: AIMessage[] = []
 
-      // System prompt - EMOJI BILAN
+      // System prompt (til bo'yicha, pro full-stack coder)
       aiMessages.push({
         role: 'system',
         content: this.getSystemPrompt(detectedLanguage),
       })
 
-      // Style prompt - EMOJI BILAN
+      // Style prompt (coding vs casual)
       aiMessages.push({
         role: 'system',
-        content: this.getStylePrompt(detectedLanguage),
+        content: this.getStylePrompt(isCoding),
       })
 
       // Add history
@@ -605,10 +638,10 @@ export class ChatService {
         },
       })
 
-      // Kayfiyat emojisini yuborish
+      // Kayfiyat emojisini yuborish (faqat casual rejim uchun foydali)
       const mood = this.emojiManager.detectMood(input.content)
       const moodEmoji = this.emojiManager.getMoodEmoji(mood)
-      
+
       yield {
         type: 'start',
         messageId: assistantMessage.id,
@@ -660,76 +693,155 @@ export class ChatService {
         aiMessages.splice(aiMessages.length - 1, 0, contextMsg)
       }
 
-      // ─── 11. Stream from AI provider ────────────────────────────
+      // ─── 11. Check for image generation request ─────────────────
+      const imagePattern = /^(rasm\s+chiz|rasim\s+chiz|rasm\s+yarat|chiz\s+menga|draw\s+|generate\s+image\s+|create\s+image\s+)/i
+      const imageMatch = input.content.match(imagePattern)
+
+      if (imageMatch && process.env.HF_API_KEY) {
+        const prompt = input.content.replace(imagePattern, '').trim()
+        yield { type: 'delta', delta: `🎨 **"${prompt}"** rasmi yaratilmoqda...\n\n` }
+
+        try {
+          const axios = (await import('axios')).default
+          const encodedPrompt = encodeURIComponent(prompt)
+          const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&enhance=true`
+
+          await axios.head(imageUrl, { timeout: 15000 })
+
+          const imgTag = `![${prompt}](${imageUrl})`
+          const doneContent = `${imgTag}\n\n*Prompt: "${prompt}"*`
+
+          await this.prisma.message.update({
+            where: { id: assistantMessage.id },
+            data: { content: doneContent, status: 'complete' },
+          })
+          yield { type: 'delta', delta: doneContent }
+          yield { type: 'done', messageId: assistantMessage.id, finishReason: 'stop' }
+          return
+        } catch (err: any) {
+          this.app.log.error({ err: err?.message }, 'Image generation failed')
+          yield { type: 'delta', delta: `❌ Rasm yaratishda xato. Oddiy suhbat rejimiga o'tildi:\n\n` }
+          yield { type: 'done', messageId: assistantMessage.id, finishReason: 'stop' }
+          return
+        }
+      }
+
+      // ─── 12. Stream from AI provider ────────────────────────────
       let fullContent = ''
       let inputTokens = 0
       let outputTokens = 0
       let finishReason = 'stop'
       const startTime = Date.now()
 
-      try {
-        const stream = aiProvider.chatStream({
-          model: model,
-          provider,
-          messages: aiMessages,
-          temperature: 0.7,
-          maxTokens: input.maxTokens || 8192,
-          stream: true,
-        })
+      // Coding so'rovlar uchun: barqarorroq (past temperature) va uzunroq javob limiti
+      const temperature = isCoding ? 0.25 : 0.7
+      const maxTokens = input.maxTokens || (isCoding ? 16384 : 8192)
 
-        for await (const chunk of stream) {
-          if (chunk.type === 'delta' && chunk.delta) {
-            fullContent += chunk.delta
-            yield { type: 'delta', delta: chunk.delta }
-          }
+      // ─── Key rotation: 429/rate-limit bo'lganda keyingi keyga o'tish ───
+      const MAX_KEY_RETRIES = groqKeyManager.getStatus().total
+      let keyRetry = 0
+      let streamSuccess = false
 
-          if (chunk.type === 'done') {
-            if (chunk.usage) {
-              inputTokens = chunk.usage.inputTokens || 0
-              outputTokens = chunk.usage.outputTokens || 0
+      while (keyRetry <= MAX_KEY_RETRIES && !streamSuccess) {
+        try {
+          const stream = aiProvider.chatStream({
+            model: model,
+            provider,
+            messages: aiMessages,
+            temperature,
+            maxTokens,
+            stream: true,
+          })
+
+          for await (const chunk of stream) {
+            if (chunk.type === 'delta' && chunk.delta) {
+              fullContent += chunk.delta
+              yield { type: 'delta', delta: chunk.delta }
             }
-            finishReason = chunk.finishReason ?? 'stop'
+
+            if (chunk.type === 'done') {
+              if (chunk.usage) {
+                inputTokens = chunk.usage.inputTokens || 0
+                outputTokens = chunk.usage.outputTokens || 0
+              }
+              finishReason = chunk.finishReason ?? 'stop'
+            }
           }
-        }
 
-        if (!fullContent.trim()) {
-          throw new Error('AI hech qanday javob bermadi')
-        }
+          if (!fullContent.trim()) {
+            throw new Error('AI hech qanday javob bermadi')
+          }
 
-      } catch (err) {
-        const error = err as Error
-        this.app.log.error(error, 'AI stream error')
-        
-        let errorMessage = `Kechirasiz, xatolik: ${error.message} 😔`
-        if (detectedLanguage === 'en') {
-          errorMessage = `Sorry, error: ${error.message} 😔`
-        } else if (detectedLanguage === 'ru') {
-          errorMessage = `Извините, ошибка: ${error.message} 😔`
+          streamSuccess = true
+
+        } catch (err) {
+          const error = err as Error
+
+          // 429 / rate-limit xatoligi — keyingi keyga o'tish
+          if (groqKeyManager.isRateLimitError(error) && provider === 'groq') {
+            keyRetry++
+            const nextKey = groqKeyManager.markCurrentExhausted(error.message)
+
+            if (nextKey) {
+              this.app.log.warn(`🔄 Groq key rotated (attempt ${keyRetry})`)
+              try {
+                const { ProviderRegistry } = await import('@go-ai/ai-core')
+                ;(this.ai as any).providers?.groq?.updateApiKey?.(nextKey)
+                const newProvider = this.ai.get('groq')
+                if (newProvider && typeof (newProvider as any).setApiKey === 'function') {
+                  ;(newProvider as any).setApiKey(nextKey)
+                }
+              } catch {
+                // Provider API key update supported bo'lmasa, davom etamiz
+              }
+              fullContent = ''
+              continue
+            }
+
+            if (groqKeyManager.allExhausted()) {
+              const exhaustedMsg = detectedLanguage === 'uz'
+                ? 'Limitingiz tugadi. Iltimos, bir oz kuting yoki keyinroq urinib ko\'ring. 😔'
+                : detectedLanguage === 'ru'
+                ? 'Лимит исчерпан. Пожалуйста, подождите и попробуйте позже. 😔'
+                : 'All limits exhausted. Please wait and try again later. 😔'
+
+              await this.prisma.message.update({
+                where: { id: assistantMessage.id },
+                data: { status: 'error', content: exhaustedMsg },
+              })
+              yield { type: 'error', error: exhaustedMsg }
+              return
+            }
+          }
+
+          this.app.log.error(error, 'AI stream error')
+
+          let errorMessage = `Kechirasiz, xatolik yuz berdi. Qaytadan urinib ko'ring. 😔`
+          if (detectedLanguage === 'en') {
+            errorMessage = `Sorry, an error occurred. Please try again. 😔`
+          } else if (detectedLanguage === 'ru') {
+            errorMessage = `Извините, произошла ошибка. Попробуйте ещё раз. 😔`
+          }
+
+          fullContent = errorMessage
+
+          await this.prisma.message.update({
+            where: { id: assistantMessage.id },
+            data: { status: 'error', content: errorMessage },
+          })
+
+          yield { type: 'error', error: error.message }
+          return
         }
-        
-        fullContent = errorMessage
-        
-        await this.prisma.message.update({
-          where: { id: assistantMessage.id },
-          data: { 
-            status: 'error', 
-            content: errorMessage 
-          },
-        })
-        
-        yield { type: 'error', error: error.message }
-        return
       }
 
       const latencyMs = Date.now() - startTime
 
-      // ─── 12. O'ZBEK TILI UCHUN TOZALASH (EMOJI BILAN) ──────────
-      if (detectedLanguage === 'uz') {
-        try {
-          fullContent = this.uzbekFilter.clean(fullContent)
-        } catch (error) {
-          this.app.log.warn('Uzbek cleaning failed, using original')
-        }
+      // ─── 12b. O'ZBEK TILI UCHUN TOZALASH ──────────────────────
+      // Faqat coding bo'lmagan xabarlarda ishlaydi — kod javoblari
+      // hech qachon o'zgartirilmaydi, chunki bu kodni buzishi mumkin
+      if (!isCoding && detectedLanguage === 'uz') {
+        fullContent = this.uzbekFilter.clean(fullContent)
       }
 
       // ─── 13. Save completed message ──────────────────────────────
@@ -876,7 +988,6 @@ export class ChatService {
     })
   }
 
-  // EmojiManager ni olish
   getEmojiManager(): EmojiMoodManager {
     return this.emojiManager
   }

@@ -48,7 +48,7 @@ export function MemorySettings() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h2 className="text-xl font-semibold mb-1">Memory</h2>
           <p className="text-sm text-muted-foreground">aicraft remembers facts about you to personalize responses</p>

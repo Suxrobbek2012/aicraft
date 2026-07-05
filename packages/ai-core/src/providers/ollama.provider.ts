@@ -103,8 +103,12 @@ export class OllamaProvider extends BaseAIProvider {
       stream: false,
       options: {
         temperature: options.temperature ?? 0.7,
+        top_p: options.topP ?? 0.9,
+        repeat_penalty: options.repeatPenalty ?? 1.1,
         num_predict: options.maxTokens ?? 4096,
+        num_ctx: options.contextLength ?? 8192,
       },
+      ...(options.stop?.length ? { stop: options.stop } : {}),
     })
 
     const data = response.data

@@ -162,20 +162,20 @@ function WelcomeScreen({
   onSuggestionClick: (text: string) => void
 }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] py-12">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100svh-180px)] py-8 px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="text-center mb-10"
+        className="text-center"
       >
-        <div className="flex items-center justify-center mb-5">
-          <AicraftLogo size={48} showText={false} />
+        <div className="flex items-center justify-center mb-4">
+          <AicraftLogo size={40} showText={false} />
         </div>
-        <h1 className="text-3xl font-semibold text-foreground mb-2">
+        <h1 className="text-2xl md:text-3xl font-semibold text-foreground mb-2">
           {userName ? `Hello, ${userName.split(' ')[0]} 👋` : 'Welcome to aicraft'}
         </h1>
-        <p className="text-muted-foreground text-base">
+        <p className="text-muted-foreground text-sm md:text-base">
           How can I help you today?
         </p>
       </motion.div>

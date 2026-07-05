@@ -4,13 +4,13 @@
 
 /*
   ============================================================
-  "NEON GARDEN" — ZAMONAVIY SHAHAR O'SIMLIKLARI INTERFEYSI
+  "GOLDEN HOUR" — ZAMONAVIY SHAHAR INTERFEYSI
   ============================================================
   1. Mobil-first, minimal va nafis dizayn
   2. Interaktiv elementlar — mikro-interaksiyalar bilan
   3. "Living Border" — fokusda jonlanuvchi chegaralar
   4. Yumshoq shisha (glassmorphism) qatlamlari
-  5. Tabiiy va sintetik ranglar uyg'unligi
+  5. Oltin va kulrang ranglar uyg'unligi
   6. Har bir elementda "nafas oluvchi" animatsiyalar
   ============================================================
 */
@@ -23,97 +23,97 @@
 
 @layer base {
   :root {
-    /* Yengil rejim — yumshoq tabiiy ranglar, o'simlik va osmon ohanglari */
-    --background: 150 30% 97%;
-    --foreground: 160 40% 10%;
-    --card: 150 25% 99%;
-    --card-foreground: 160 40% 10%;
-    --popover: 150 25% 99%;
-    --popover-foreground: 160 40% 10%;
+    /* Yengil rejim — och to'q kulrang, oltin aksentlar */
+    --background: 220 15% 94%;
+    --foreground: 220 20% 12%;
+    --card: 220 15% 97%;
+    --card-foreground: 220 20% 12%;
+    --popover: 220 15% 97%;
+    --popover-foreground: 220 20% 12%;
 
-    --primary: 160 75% 35%;
-    --primary-glow: 160 85% 45%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 42 85% 45%;
+    --primary-glow: 42 90% 52%;
+    --primary-foreground: 220 20% 8%;
 
-    --secondary: 150 25% 93%;
-    --secondary-foreground: 160 30% 16%;
+    --secondary: 220 12% 90%;
+    --secondary-foreground: 220 18% 18%;
 
-    --muted: 150 20% 94%;
-    --muted-foreground: 160 15% 40%;
+    --muted: 220 10% 91%;
+    --muted-foreground: 220 10% 42%;
 
-    --accent: 45 90% 50%;
-    --accent-foreground: 160 40% 10%;
+    --accent: 42 85% 50%;
+    --accent-foreground: 220 20% 10%;
 
-    --pop: 280 70% 55%;
-    --pop-foreground: 0 0% 100%;
-    --pop-2: 350 85% 60%;
+    --pop: 42 90% 48%;
+    --pop-foreground: 220 20% 8%;
+    --pop-2: 36 80% 52%;
 
-    --destructive: 0 80% 55%;
+    --destructive: 0 75% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 150 20% 88%;
-    --input: 150 20% 92%;
-    --ring: 160 75% 35%;
+    --border: 220 12% 84%;
+    --input: 220 12% 90%;
+    --ring: 42 85% 45%;
     --radius: 1rem;
 
-    --aurora-1: 160 80% 50%;
-    --aurora-2: 45 85% 55%;
-    --aurora-3: 280 75% 60%;
+    --aurora-1: 42 80% 55%;
+    --aurora-2: 36 75% 58%;
+    --aurora-3: 48 70% 52%;
 
     --grain-opacity: 0.025;
     --shadow-soft: 
-      0 2px 12px -4px hsl(160 40% 20% / 0.08),
-      0 8px 32px -8px hsl(160 40% 20% / 0.12);
+      0 2px 12px -4px hsl(220 20% 20% / 0.08),
+      0 8px 32px -8px hsl(220 20% 20% / 0.12);
     --shadow-glow: 
-      0 0 0 1px hsl(var(--primary) / 0.15),
-      0 8px 32px -8px hsl(var(--primary) / 0.3);
+      0 0 0 1px hsl(var(--primary) / 0.18),
+      0 8px 32px -8px hsl(var(--primary) / 0.35);
   }
 
   .dark {
-    /* Qorong'u rejim — tungi bog', neon va yulduzli osmon */
-    --background: 220 25% 6%;
-    --foreground: 140 25% 96%;
-    --card: 220 20% 10%;
-    --card-foreground: 140 25% 96%;
-    --popover: 220 20% 9%;
-    --popover-foreground: 140 25% 96%;
+    /* Qorong'u rejim — rasmga mos warm dark, oltin neon */
+    --background: 24 12% 7%;
+    --foreground: 40 20% 92%;
+    --card: 24 10% 11%;
+    --card-foreground: 40 20% 92%;
+    --popover: 24 10% 10%;
+    --popover-foreground: 40 20% 92%;
 
-    --primary: 160 80% 45%;
-    --primary-glow: 160 90% 55%;
-    --primary-foreground: 220 25% 6%;
+    --primary: 42 90% 50%;
+    --primary-glow: 42 95% 58%;
+    --primary-foreground: 24 12% 7%;
 
-    --secondary: 220 18% 15%;
-    --secondary-foreground: 140 20% 94%;
+    --secondary: 24 8% 16%;
+    --secondary-foreground: 40 15% 90%;
 
-    --muted: 220 18% 13%;
-    --muted-foreground: 160 12% 58%;
+    --muted: 24 8% 13%;
+    --muted-foreground: 40 8% 58%;
 
-    --accent: 45 95% 55%;
-    --accent-foreground: 220 25% 6%;
+    --accent: 42 90% 55%;
+    --accent-foreground: 24 12% 7%;
 
-    --pop: 280 80% 62%;
-    --pop-foreground: 220 25% 6%;
-    --pop-2: 340 90% 60%;
+    --pop: 42 85% 56%;
+    --pop-foreground: 24 12% 7%;
+    --pop-2: 36 85% 54%;
 
-    --destructive: 0 75% 52%;
+    --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 16% 20%;
-    --input: 220 16% 16%;
-    --ring: 160 80% 45%;
+    --border: 24 8% 18%;
+    --input: 24 8% 15%;
+    --ring: 42 90% 50%;
     --radius: 1rem;
 
-    --aurora-1: 160 85% 40%;
-    --aurora-2: 280 80% 40%;
-    --aurora-3: 45 85% 45%;
+    --aurora-1: 42 85% 45%;
+    --aurora-2: 36 80% 42%;
+    --aurora-3: 48 80% 48%;
 
-    --grain-opacity: 0.04;
+    --grain-opacity: 0.03;
     --shadow-soft: 
-      0 2px 16px -4px hsl(0 0% 0% / 0.5),
-      0 12px 40px -8px hsl(0 0% 0% / 0.6);
+      0 2px 16px -4px hsl(0 0% 0% / 0.6),
+      0 12px 40px -8px hsl(0 0% 0% / 0.7);
     --shadow-glow: 
-      0 0 0 1px hsl(var(--primary) / 0.25),
-      0 0 48px -8px hsl(var(--primary) / 0.5);
+      0 0 0 1px hsl(var(--primary) / 0.3),
+      0 0 48px -8px hsl(var(--primary) / 0.55);
   }
 }
 
@@ -132,14 +132,14 @@
     isolation: isolate;
   }
 
-  /* Asosiy fon aurorasi — sekin harakatlanuvchi, nafis tuman */
+  /* Asosiy fon aurorasi — oltin tuman */
   body::before {
     content: '';
     position: fixed;
     inset: -30%;
     z-index: -2;
     pointer-events: none;
-    opacity: 0.4;
+    opacity: 0.35;
     background:
       radial-gradient(40% 35% at 10% 15%, hsl(var(--aurora-1) / 0.2), transparent 70%),
       radial-gradient(45% 40% at 90% 10%, hsl(var(--aurora-3) / 0.18), transparent 70%),
@@ -149,7 +149,7 @@
   }
 
   .dark body::before {
-    opacity: 0.7;
+    opacity: 0.65;
   }
 
   /* Donador tekstura — qimmatbaho qog'oz effekti */
@@ -176,7 +176,7 @@
     border-radius: 6px;
   }
 
-  /* Minimal scrollbar — shisha uslubda */
+  /* Minimal scrollbar — oltin uslubda */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -330,7 +330,7 @@
     transform: translateY(-2px) scale(1.005);
   }
 
-  /* Foydalanuvchi xabari — gradient, porlash */
+  /* Foydalanuvchi xabari — oltin gradient, porlash */
   .message-bubble-user {
     color: hsl(var(--primary-foreground));
     background: linear-gradient(145deg, 
@@ -361,7 +361,7 @@
     opacity: 1;
   }
 
-  /* Gradient matn — jonli, "nafas oluvchi" */
+  /* Gradient matn — oltin oqim */
   .gradient-text {
     background: linear-gradient(90deg, 
       hsl(var(--primary)), 
@@ -374,7 +374,7 @@
     animation: gradient-flow 8s ease infinite;
   }
 
-  /* Shimmer effekti — yengil, nafis */
+  /* Shimmer effekti — oltin */
   .shimmer {
     background: linear-gradient(90deg, 
       transparent 0%, 
@@ -391,14 +391,14 @@
     box-shadow: var(--shadow-glow);
   }
 
-  /* Yorqin badge — gradient */
+  /* Yorqin badge — oltin gradient */
   .pop-badge {
     background: linear-gradient(145deg, hsl(var(--pop)), hsl(var(--pop-2)));
     color: hsl(var(--pop-foreground));
     box-shadow: 0 4px 16px -4px hsl(var(--pop) / 0.4);
   }
 
-  /* Asosiy tugma — jonli, mikro-interaksiya */
+  /* Asosiy tugma — oltin, mikro-interaksiya */
   .btn-primary-vivid {
     @apply relative overflow-hidden rounded-xl px-5 py-2.5 font-semibold select-none;
     color: hsl(var(--primary-foreground));
@@ -435,7 +435,7 @@
     background-position: -50% 0;
   }
 
-  /* Avatar halqasi — aylanuvchi gradient */
+  /* Avatar halqasi — aylanuvchi oltin gradient */
   .avatar-ring {
     @apply relative rounded-full p-[2.5px];
     background: conic-gradient(
@@ -452,7 +452,7 @@
     animation: border-rotate 6s linear infinite, pulse-soft 3s ease-in-out infinite;
   }
 
-  /* Yozish indikatori — 3 nuqta */
+  /* Yozish indikatori — 3 nuqta oltin */
   .typing-dots {
     @apply inline-flex items-center gap-1.5 px-3 py-2;
   }
@@ -495,7 +495,7 @@
   }
 }
 
-/* Markdown — zamonaviy, shisha uslubda */
+/* Markdown — zamonaviy, oltin aksentli */
 .prose-chat {
   @apply prose prose-sm dark:prose-invert max-w-none;
 }
@@ -503,7 +503,7 @@
 .prose-chat pre {
   @apply relative rounded-xl overflow-hidden;
   border: 1px solid hsl(var(--primary) / 0.2);
-  background: hsl(220 25% 4%) !important;
+  background: hsl(220 15% 4%) !important;
   box-shadow: var(--shadow-soft);
   padding: 0 !important;
 }
@@ -629,8 +629,8 @@
     box-shadow: var(--shadow-glow); 
   }
   50% { 
-    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3), 
-                0 0 56px -6px hsl(var(--primary) / 0.6); 
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.35), 
+                0 0 56px -6px hsl(var(--primary) / 0.65); 
   }
 }
 
@@ -661,5 +661,69 @@
   .card-sheen::after {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* ============================================================
+   MOBIL OPTIMIZATSIYALAR
+   ============================================================ */
+
+/* Chat window — mobilda to'g'ri o'lcham */
+@media (max-width: 767px) {
+  .chat-window-messages-area {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .chat-window-input-panel {
+    padding: 0.5rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    position: sticky;
+    bottom: 0;
+  }
+
+  /* Xabar bubble mobilda kengroq */
+  .message-bubble-content {
+    max-width: calc(100vw - 3.5rem);
+  }
+
+  /* Hover effektlarni mobildan olib tashlash */
+  .chat-message-shell:hover {
+    background: none;
+    transform: none;
+  }
+
+  .message-bubble-content:hover {
+    transform: none;
+  }
+
+  /* Kod bloki — mobilda scroll */
+  .code-block-wrapper {
+    max-width: calc(100vw - 2rem);
+    overflow-x: auto;
+  }
+}
+
+/* iOS Safari 100vh muammosi */
+@supports (-webkit-touch-callout: none) {
+  .h-screen {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Touch qurilmalarda tap highlight olib tashlash */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobilda font size auto-zoom oldini olish */
+input, textarea, select {
+  font-size: 16px !important;
+}
+
+@media (min-width: 768px) {
+  input, textarea, select {
+    font-size: inherit !important;
   }
 }

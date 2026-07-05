@@ -3,9 +3,10 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Bot, ArrowRight, Check, ArrowLeft } from 'lucide-react'
+import { ArrowRight, Check, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { AicraftLogo } from '@/components/ui/aicraft-logo'
 import { api, getApiError } from '@/lib/api'
 import toast from 'react-hot-toast'
 
@@ -38,16 +39,11 @@ export default function ForgotPasswordPage() {
         animate={{ opacity: 1, y: 0 }}
         className="relative w-full max-w-sm"
       >
-        <div className="flex justify-center mb-8">
-          <div className="flex items-center gap-2.5">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Bot className="h-5 w-5 text-primary" />
-            </div>
-            <span className="text-xl font-semibold">aicraft</span>
-          </div>
+        <div className="flex justify-center mb-6">
+          <AicraftLogo size={36} />
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-8 shadow-xl shadow-black/20">
+        <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-xl shadow-black/20">
           {sent ? (
             <div className="text-center space-y-4">
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
@@ -79,9 +75,10 @@ export default function ForgotPasswordPage() {
                     placeholder="you@example.com"
                     required
                     autoFocus
+                    className="h-11"
                   />
                 </div>
-                <Button type="submit" className="w-full" loading={loading}>
+                <Button type="submit" className="w-full h-11" loading={loading}>
                   Send Reset Link <ArrowRight className="h-4 w-4" />
                 </Button>
               </form>

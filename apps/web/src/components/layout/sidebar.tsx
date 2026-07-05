@@ -59,7 +59,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const [showNewFolderInput, setShowNewFolderInput] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({})
-
+  const [filterQuery, setFilterQuery] = useState('')
   // Rename states
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameTitle, setRenameTitle] = useState('')
@@ -69,14 +69,24 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     loadFolders()
   }, [])
 
+  // Listen for global search shortcut (Ctrl+K / Cmd+K from chat input)
+  useEffect(() => {
+    const handler = () => setSearchOpen(true)
+    window.addEventListener('open-search', handler)
+    return () => window.removeEventListener('open-search', handler)
+  }, [])
+
   const handleNewChat = () => {
     setActiveConversation(null)
     router.push('/chat')
+    window.dispatchEvent(new CustomEvent('sidebar-close'))
   }
 
   const handleSelectConversation = (id: string) => {
     setActiveConversation(id)
     router.push(`/chat/${id}`)
+    // Mobileda sidebar yopilsin
+    window.dispatchEvent(new CustomEvent('sidebar-close'))
   }
 
   const handleLogout = async () => {
@@ -169,8 +179,16 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   // Non-pinned chats outside folders
   const rootConversations = conversations.filter((c) => !c.isPinned && !c.folderId)
 
+  // Filter by query
+  const filteredPinned = pinnedConversations.filter((c) =>
+    !filterQuery || c.title.toLowerCase().includes(filterQuery.toLowerCase())
+  )
+  const filteredRoot = rootConversations.filter((c) =>
+    !filterQuery || c.title.toLowerCase().includes(filterQuery.toLowerCase())
+  )
+
   // Group root conversations by date
-  const groupedRootConversations = groupConversationsByDate(rootConversations)
+  const groupedRootConversations = groupConversationsByDate(filteredRoot)
 
   if (collapsed) {
     return (
@@ -229,17 +247,36 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
         <div className="h-px bg-border mx-3 mb-2" />
 
+        {/* Filter input */}
+        <div className="px-2 pb-2">
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-secondary/40 px-3 py-1.5">
+            <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <input
+              type="text"
+              value={filterQuery}
+              onChange={(e) => setFilterQuery(e.target.value)}
+              placeholder="Filter chats..."
+              className="flex-1 bg-transparent text-xs outline-none text-foreground placeholder:text-muted-foreground/60"
+            />
+            {filterQuery && (
+              <button onClick={() => setFilterQuery('')} className="text-muted-foreground hover:text-foreground">
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Scrollable list */}
         <ScrollArea className="flex-1 px-2">
           <div className="space-y-4 pb-4">
             {/* Pinned Chats */}
-            {pinnedConversations.length > 0 && (
+            {filteredPinned.length > 0 && (
               <div>
                 <p className="px-2 py-1 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider flex items-center gap-1.5">
                   <Pin className="h-3 w-3 text-primary" /> Pinned
                 </p>
                 <div className="space-y-0.5">
-                  {pinnedConversations.map((conv) => (
+                  {filteredPinned.map((conv) => (
                     <ConversationItem
                       key={conv.id}
                       conversation={conv}

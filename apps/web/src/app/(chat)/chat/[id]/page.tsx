@@ -7,7 +7,8 @@ import { ChatHeader } from '@/components/chat/chat-header'
 import { useChatStore } from '@/store/chat.store'
 
 export default function ConversationPage() {
-  const { id } = useParams<{ id: string }>()
+  const params = useParams<{ id: string }>()
+  const id = params?.id
   const { setActiveConversation } = useChatStore()
 
   useEffect(() => {

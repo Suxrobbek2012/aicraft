@@ -22,6 +22,7 @@ export async function updateMemory(
       .map((m) => `${m.role}: ${m.content.slice(0, 500)}`)
       .join('\n')
 
+    // Use whatever provider is available instead of hardcoding openai/gpt-4o-mini
     const provider = await ai.getPreferred()
 
     const response = await provider.chat({
@@ -95,25 +96,47 @@ export async function getRelevantMemories(
 
   if (!memories.length) return []
 
-  // Simple keyword-based relevance (production would use vector search)
-  const queryWords = query.toLowerCase().split(/\s+/)
+  const queryWords = query.toLowerCase().split(/\s+/).filter((w) => w.length > 2)
+  const now = Date.now()
+  const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
+
   const scored = memories.map((m) => {
     const contentLower = m.content.toLowerCase()
-    const score = queryWords.filter((w) => contentLower.includes(w)).length
-    return { memory: m, score }
+
+    // Keyword relevance score
+    const keywordScore = queryWords.filter((w) => contentLower.includes(w)).length
+
+    // Recency boost: memories accessed within 7 days get a bonus
+    const lastAccess = m.lastAccessedAt?.getTime() ?? m.createdAt.getTime()
+    const recencyBoost = now - lastAccess < SEVEN_DAYS_MS ? 0.3 : 0
+
+    // Importance weight
+    const importanceBoost = m.importance * 0.5
+
+    const totalScore = keywordScore + recencyBoost + importanceBoost
+
+    return { memory: m, score: totalScore, keywordScore }
   })
 
+  // Filter: require at least 1 keyword match OR high importance
   const relevant = scored
+    .filter((s) => s.keywordScore > 0 || s.memory.importance >= 0.8)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map((s) => s.memory.content)
 
-  // Update access count
-  const ids = scored.slice(0, limit).map((s) => s.memory.id)
-  await prisma.memory.updateMany({
-    where: { id: { in: ids } },
-    data: { accessCount: { increment: 1 }, lastAccessedAt: new Date() },
-  })
+  // Update access count for returned memories
+  const ids = scored
+    .filter((s) => s.keywordScore > 0 || s.memory.importance >= 0.8)
+    .slice(0, limit)
+    .map((s) => s.memory.id)
+
+  if (ids.length > 0) {
+    await prisma.memory.updateMany({
+      where: { id: { in: ids } },
+      data: { accessCount: { increment: 1 }, lastAccessedAt: new Date() },
+    })
+  }
 
   return relevant
 }

@@ -94,15 +94,15 @@ export default function RegisterPage() {
         transition={{ duration: 0.4 }}
         className="relative w-full max-w-sm"
       >
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-6">
           <AicraftLogo size={36} />
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-8 shadow-xl shadow-black/20">
-          <div className="mb-6 text-center">
-            <h1 className="text-2xl font-semibold">Create account</h1>
+        <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-xl shadow-black/20">
+          <div className="mb-5 text-center">
+            <h1 className="text-xl md:text-2xl font-semibold">Create account</h1>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              Start with 20 free messages per day
+              Start chatting for free
             </p>
           </div>
 
@@ -116,7 +116,7 @@ export default function RegisterPage() {
             </motion.div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Display Name</label>
               <Input
@@ -125,18 +125,20 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 placeholder="John Doe"
                 autoComplete="name"
+                className="h-11"
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Username</label>
-                <Input
+              <Input
                 name="username"
                 value={form.username}
                 onChange={handleChange}
                 placeholder="johndoe"
                 autoComplete="off"
                 required
+                className="h-11"
               />
               {usernameError && (
                 <p className="text-xs text-destructive">{usernameError}</p>
@@ -153,6 +155,7 @@ export default function RegisterPage() {
                 placeholder="you@example.com"
                 autoComplete="email"
                 required
+                className="h-11"
               />
             </div>
 
@@ -167,18 +170,17 @@ export default function RegisterPage() {
                   placeholder="••••••••"
                   autoComplete="new-password"
                   required
-                  className="pr-10"
+                  className="h-11 pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
 
-              {/* Password strength */}
               {form.password && (
                 <div className="grid grid-cols-2 gap-1 mt-2">
                   {PASSWORD_RULES.map((rule) => (
@@ -193,7 +195,7 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <Button type="submit" className="w-full h-10" loading={isLoading}>
+            <Button type="submit" className="w-full h-11 text-base" loading={isLoading}>
               Create account
               {!isLoading && <ArrowRight className="h-4 w-4" />}
             </Button>

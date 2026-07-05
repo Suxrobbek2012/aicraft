@@ -99,7 +99,7 @@ export function ProfileSettings() {
           <p className="text-xs text-muted-foreground text-right">{form.bio.length}/500</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Location</label>
             <Input name="location" value={form.location} onChange={handleChange} placeholder="City, Country" />

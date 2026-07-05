@@ -144,25 +144,57 @@ export function stripMarkdown(text: string): string {
 }
 
 /**
- * Detect language from text (basic heuristic)
+ * Detect language from text using a scoring-based approach.
+ *
+ * Properly disambiguates:
+ * - Uzbek Latin (oʻ, gʻ, sh, ch patterns + Uzbek words)
+ * - Uzbek Cyrillic (ў, қ, ғ, ҳ — characters absent from Russian)
+ * - Russian Cyrillic (standard а-яёА-ЯЁ without Uzbek-specific chars)
+ * - Other scripts (Arabic, CJK, etc.)
+ *
+ * Falls back to English if no script markers are found.
  */
 export function detectLanguage(text: string): string {
-  const patterns: Record<string, RegExp> = {
-    uz: /\b(?:salom|rahmat|qalesan|qanday|yo'q|yoq|ha|yo‘q|rahmat|салом|рахмат|қандай)\b/i,
-    ru: /[а-яёА-ЯЁ]/,
-    ar: /[\u0600-\u06FF]/,
-    zh: /[\u4E00-\u9FFF]/,
-    ja: /[\u3040-\u309F\u30A0-\u30FF]/,
-    ko: /[\uAC00-\uD7AF]/,
-    de: /[äöüÄÖÜß]/,
-    fr: /[àâæçéèêëîïôùûüÿœÀÂÆÇÉÈÊËÎÏÔÙÛÜŸŒ]/,
-    tr: /[şğüöıçŞĞÜÖİÇ]/,
+  if (!text || text.trim().length === 0) return 'en'
+
+  // --- 1. Uzbek Latin markers (highest priority — unique to Uzbek) ---
+  // Characters oʻ (o + modifier letter turned comma) and gʻ are unique Uzbek Latin markers
+  const uzbekLatinMarkers = /[oO]ʻ|[gG]ʻ|oʼ|gʼ/
+  const uzbekLatinWords =
+    /\b(?:salom|rahmat|qanday(?:siz)?|yo['ʻʼ]q|ha|kerak|emas|bilan|uchun|haqida|qilish|bo['ʻʼ]lish|men|sen|siz|biz|nima|qayerda|qachon|kimga)\b/i
+
+  if (uzbekLatinMarkers.test(text) || uzbekLatinWords.test(text)) {
+    return 'uz'
   }
 
-  for (const [lang, pattern] of Object.entries(patterns)) {
+  // --- 2. Uzbek Cyrillic markers (ў, қ, ғ, ҳ — NOT in Russian) ---
+  const uzbekCyrillicMarkers = /[ўқғҳЎҚҒҲ]/
+  if (uzbekCyrillicMarkers.test(text)) {
+    return 'uz'
+  }
+
+  // --- 3. Non-Cyrillic script detection ---
+  const scriptPatterns: Array<[string, RegExp]> = [
+    ['ar', /[\u0600-\u06FF]/],
+    ['zh', /[\u4E00-\u9FFF]/],
+    ['ja', /[\u3040-\u309F\u30A0-\u30FF]/],
+    ['ko', /[\uAC00-\uD7AF]/],
+    ['de', /[äöüÄÖÜß]/],
+    ['fr', /[àâæçéèêëîïôùûüÿœÀÂÆÇÉÈÊËÎÏÔÙÛÜŸŒ]/],
+    ['tr', /[şğıŞĞİ]/],
+  ]
+
+  for (const [lang, pattern] of scriptPatterns) {
     if (pattern.test(text)) return lang
   }
 
+  // --- 4. Russian Cyrillic (standard set, checked AFTER Uzbek Cyrillic) ---
+  const russianCyrillic = /[а-яёА-ЯЁ]/
+  if (russianCyrillic.test(text)) {
+    return 'ru'
+  }
+
+  // --- 5. Default to English ---
   return 'en'
 }
 

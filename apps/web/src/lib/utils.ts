@@ -52,7 +52,8 @@ export function getProviderName(provider: string): string {
     google: 'Google',
     xai: 'xAI',
     perplexity: 'Perplexity',
-    ollama: 'Aicraft',
+    ollama: 'Aicraft Local',
+    groq: 'Aicraft',
   }
   return names[provider] ?? provider
 }
@@ -64,7 +65,8 @@ export function getModelIcon(provider: string): string {
     google: '🔵',
     xai: '🟣',
     perplexity: '🔷',
-    ollama: '✦',
+    ollama: '💻',
+    groq: '✦',
   }
   return icons[provider] ?? '✦'
 }
@@ -79,11 +81,27 @@ export function isSameModelId(a: string, b: string): boolean {
 
 export function getModelDisplayName(modelId: string): string {
   const normalized = normalizeModelId(modelId)
+
+  // Groq / cloud models — all branded as "Aicraft"
+  if (normalized.includes('llama-3.3-70b')) return 'Aicraft'
+  if (normalized.includes('llama-3.1-70b')) return 'Aicraft Pro'
+  if (normalized.includes('llama-3.1-8b')) return 'Aicraft Mini'
+  if (normalized.includes('llama-3-70b') || normalized.includes('llama3-70b')) return 'Aicraft'
+  if (normalized.includes('llama-3-8b') || normalized.includes('llama3-8b')) return 'Aicraft Mini'
+  if (normalized.includes('mixtral')) return 'Aicraft'
+  if (normalized.includes('gemma2-9b')) return 'Aicraft'
+  if (normalized.includes('gemma-7b') || normalized.includes('gemma2-7b')) return 'Aicraft Mini'
+  if (normalized.includes('deepseek')) return 'Aicraft'
+  if (normalized.includes('qwen')) return 'Aicraft'
+  if (normalized.includes('mistral')) return 'Aicraft'
+  if (normalized.match(/^llama/)) return 'Aicraft'
+
+  // Ollama local models
   if (normalized.includes('llama3.2:1b')) return 'Aicraft Mini'
-  // if (normalized.includes('llama3.2:3b')) return 'Aicraft'
   if (normalized.includes('llama3.2')) return 'Aicraft'
   if (normalized.includes('llama3.1')) return 'Aicraft Pro'
   if (normalized.includes('llama')) return 'Aicraft'
+
   return normalized
 }
 

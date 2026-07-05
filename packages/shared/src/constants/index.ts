@@ -8,7 +8,7 @@ export const PLAN_LIMITS = {
     maxFilesPerMessage: 20,
     maxConversations: -1,
     contextWindow: 200_000,
-    models: ['gpt-4o-mini', 'claude-3-haiku-20240307', 'gemini-1.5-flash', 'ollama/*'],
+    models: ['groq/*', 'ollama/*', 'llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'gemma2-9b-it'],
     features: {
       vision: false,
       fileUpload: true,
@@ -28,7 +28,7 @@ export const PLAN_LIMITS = {
     maxFilesPerMessage: 20,
     maxConversations: -1,
     contextWindow: 200_000,
-    models: ['gpt-4o', 'claude-3-5-sonnet-20241022', 'gemini-1.5-pro', 'grok-2', 'ollama/*'],
+    models: ['groq/*', 'ollama/*', '*'],
     features: {
       vision: true,
       fileUpload: true,

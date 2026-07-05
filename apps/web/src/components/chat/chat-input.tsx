@@ -328,7 +328,7 @@ export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
         />
 
         {/* Bottom hint */}
-        <p className="text-center text-xs text-muted-foreground/40 mt-2">
+        <p className="text-center text-xs text-muted-foreground/40 mt-1.5 hidden md:block">
           aicraft can make mistakes. Verify important information.
         </p>
       </div>

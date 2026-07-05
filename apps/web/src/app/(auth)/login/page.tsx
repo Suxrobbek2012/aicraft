@@ -53,14 +53,14 @@ export default function LoginPage() {
         className="relative w-full max-w-sm"
       >
         {/* Logo */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-6">
           <AicraftLogo size={36} />
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl border border-border bg-card p-8 shadow-xl shadow-black/20">
-          <div className="mb-6 text-center">
-            <h1 className="text-2xl font-semibold text-foreground">
+        <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-xl shadow-black/20">
+          <div className="mb-5 text-center">
+            <h1 className="text-xl md:text-2xl font-semibold text-foreground">
               {requiresTwoFactor ? 'Two-Factor Auth' : 'Welcome back'}
             </h1>
             <p className="mt-1.5 text-sm text-muted-foreground">
@@ -105,17 +105,14 @@ export default function LoginPage() {
                     placeholder="you@example.com"
                     autoComplete="email"
                     required
-                    className="h-10"
+                    className="h-11"
                   />
                 </div>
 
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-sm font-medium text-foreground">Password</label>
-                    <Link
-                      href="/forgot-password"
-                      className="text-xs text-primary hover:underline"
-                    >
+                    <Link href="/forgot-password" className="text-xs text-primary hover:underline">
                       Forgot password?
                     </Link>
                   </div>
@@ -127,12 +124,12 @@ export default function LoginPage() {
                       placeholder="••••••••"
                       autoComplete="current-password"
                       required
-                      className="h-10 pr-10"
+                      className="h-11 pr-10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -143,7 +140,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full h-10"
+              className="w-full h-11 text-base"
               loading={isLoading}
               disabled={isLoading || (requiresTwoFactor && totpCode.length !== 6)}
             >
@@ -154,7 +151,7 @@ export default function LoginPage() {
 
           {!requiresTwoFactor && (
             <>
-              <div className="relative my-5">
+              <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-border" />
                 </div>
@@ -164,11 +161,11 @@ export default function LoginPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="h-10 gap-2" disabled>
+                <Button variant="outline" className="h-11 gap-2" disabled>
                   <Chrome className="h-4 w-4" />
                   Google
                 </Button>
-                <Button variant="outline" className="h-10 gap-2" disabled>
+                <Button variant="outline" className="h-11 gap-2" disabled>
                   <Github className="h-4 w-4" />
                   GitHub
                 </Button>

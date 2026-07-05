@@ -26,7 +26,8 @@ interface SharedConversation {
 }
 
 export default function SharedConversationPage() {
-  const { token } = useParams<{ token: string }>()
+  const params = useParams<{ token: string }>()
+  const token = params?.token
   const [conv, setConv] = useState<SharedConversation | null>(null)
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)

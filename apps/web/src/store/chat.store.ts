@@ -51,9 +51,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
   streamingMessageId: null,
   streamingContent: '',
   error: null,
-  selectedModel: 'llama3.2:1b',
+  selectedModel: 'llama-3.3-70b-versatile',
   // selectedModel: 'llama3.2:3b',
-  selectedProvider: 'ollama',
+  selectedProvider: 'groq',
   abortController: null,
   folders: [],
   webSearch: false,
@@ -93,6 +93,79 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const { activeConversationId, selectedModel, selectedProvider, webSearch } = get()
     const controller = new AbortController()
 
+    // ─── Image generation trigger ───────────────────────────────
+    const imageMatch = content.match(/^rasim\s+chi(?:z)?\s+(.+)/i)
+      ?? content.match(/^rasm\s+chi(?:z)?\s+(.+)/i)
+      ?? content.match(/^draw\s+(.+)/i)
+      ?? content.match(/^generate\s+image\s+(.+)/i)
+
+    if (imageMatch) {
+      const prompt = imageMatch[1].trim()
+      const initConvKey2 = activeConversationId ?? 'new'
+
+      const tempUserMsg2: Message = {
+        id: `temp-user-${Date.now()}`,
+        conversationId: activeConversationId ?? '',
+        role: 'user', content, status: 'complete',
+        attachments: [], createdAt: new Date(), updatedAt: new Date(),
+      }
+      const tempImgMsg: Message = {
+        id: `temp-img-${Date.now()}`,
+        conversationId: activeConversationId ?? '',
+        role: 'assistant', content: '🎨 Rasm yaratilmoqda...', status: 'streaming',
+        createdAt: new Date(), updatedAt: new Date(),
+      }
+
+      set((state) => ({
+        isStreaming: true,
+        streamingMessageId: tempImgMsg.id,
+        messages: {
+          ...state.messages,
+          [initConvKey2]: [...(state.messages[initConvKey2] ?? []), tempUserMsg2, tempImgMsg],
+        },
+      }))
+
+      try {
+        const { data } = await api.post('/images/generate', { prompt })
+        const imgUrl = data.data.url
+        const imgContent = `![${prompt}](${imgUrl})\n\n*"${prompt}"*`
+
+        set((state) => {
+          const msgs = state.messages[initConvKey2] ?? []
+          return {
+            isStreaming: false,
+            streamingMessageId: null,
+            messages: {
+              ...state.messages,
+              [initConvKey2]: msgs.map((m) =>
+                m.id === tempImgMsg.id
+                  ? { ...m, content: imgContent, status: 'complete' as const }
+                  : m
+              ),
+            },
+          }
+        })
+      } catch (err) {
+        const errMsg = getApiError(err)
+        set((state) => {
+          const msgs = state.messages[initConvKey2] ?? []
+          return {
+            isStreaming: false,
+            streamingMessageId: null,
+            messages: {
+              ...state.messages,
+              [initConvKey2]: msgs.map((m) =>
+                m.id === tempImgMsg.id
+                  ? { ...m, content: `❌ ${errMsg}`, status: 'error' as const }
+                  : m
+              ),
+            },
+          }
+        })
+      }
+      return
+    }
+
     const initConvKey = activeConversationId ?? 'new'
 
     // Optimistic messages
@@ -131,6 +204,29 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     let fullContent = ''
     let currentConvKey = initConvKey
+    // Throttle React updates: batch delta events with rAF to avoid UI freezing
+    let pendingFlush: ReturnType<typeof setTimeout> | null = null
+    const scheduleFlush = () => {
+      if (pendingFlush) return
+      pendingFlush = setTimeout(() => {
+        pendingFlush = null
+        const snapshot = fullContent
+        set((state) => {
+          const msgs = state.messages[currentConvKey] ?? []
+          return {
+            streamingContent: snapshot,
+            messages: {
+              ...state.messages,
+              [currentConvKey]: msgs.map((m) =>
+                m.id === tempAssistantMsg.id
+                  ? { ...m, content: snapshot, status: 'streaming' as const }
+                  : m
+              ),
+            },
+          }
+        })
+      }, 32) // ~30fps — balans: silliq va performance
+    }
 
     try {
       for await (const event of streamChat(
@@ -167,23 +263,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
         if (event.type === 'delta' && event.delta) {
           fullContent += event.delta
-          set((state) => {
-            const msgs = state.messages[currentConvKey] ?? []
-            return {
-              streamingContent: fullContent,
-              messages: {
-                ...state.messages,
-                [currentConvKey]: msgs.map((m) =>
-                  m.id === tempAssistantMsg.id
-                    ? { ...m, content: fullContent, status: 'streaming' as const }
-                    : m
-                ),
-              },
-            }
-          })
+          // Throttle React state updates to avoid freezing on fast streams
+          scheduleFlush()
         }
 
         if (event.type === 'done') {
+          // Clear any pending throttled flush and do a final sync update
+          if (pendingFlush) { clearTimeout(pendingFlush); pendingFlush = null }
           set((state) => {
             const msgs = state.messages[currentConvKey] ?? []
             return {
@@ -218,6 +304,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }
       }
     } catch (err) {
+      // Clear any pending throttled flush
+      if (pendingFlush) { clearTimeout(pendingFlush); pendingFlush = null }
       if ((err as Error).name === 'AbortError') {
         set((state) => {
           const msgs = state.messages[currentConvKey] ?? []

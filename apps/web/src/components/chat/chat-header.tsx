@@ -3,8 +3,8 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Menu, Share2, MoreHorizontal, Edit2, Archive,
-  Trash2, Pin, Download, Bot, ChevronDown,
+  Menu, Share2, MoreHorizontal, Edit2,
+  Trash2, Pin, Download, Bot,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
@@ -16,16 +16,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input'
 import { useChatStore } from '@/store/chat.store'
 import { api, getApiError } from '@/lib/api'
-import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { TokenStatus } from './token-status'
 
-interface ChatHeaderProps {
-  onToggleSidebar?: () => void
-  sidebarCollapsed?: boolean
-}
-
-export function ChatHeader({ onToggleSidebar, sidebarCollapsed }: ChatHeaderProps) {
+export function ChatHeader() {
   const router = useRouter()
   const { activeConversationId, conversations, updateConversation, deleteConversation } = useChatStore()
   const [renameOpen, setRenameOpen] = useState(false)
@@ -41,7 +35,7 @@ export function ChatHeader({ onToggleSidebar, sidebarCollapsed }: ChatHeaderProp
       await api.patch(`/conversations/${activeConversationId}`, { title: newTitle.trim() })
       updateConversation(activeConversationId, { title: newTitle.trim() })
       setRenameOpen(false)
-      toast.success('Conversation renamed')
+      toast.success('Renamed')
     } catch (err) {
       toast.error(getApiError(err))
     } finally {
@@ -55,9 +49,9 @@ export function ChatHeader({ onToggleSidebar, sidebarCollapsed }: ChatHeaderProp
       const { data } = await api.patch(`/conversations/${activeConversationId}`, { isShared: true })
       const shareUrl = `${window.location.origin}/share/${data.data?.shareToken}`
       await navigator.clipboard.writeText(shareUrl)
-      toast.success('Share link copied to clipboard')
+      toast.success('Share link copied!')
     } catch {
-      toast.error('Failed to create share link')
+      toast.error('Failed to share')
     }
   }
 
@@ -68,13 +62,13 @@ export function ChatHeader({ onToggleSidebar, sidebarCollapsed }: ChatHeaderProp
       updateConversation(activeConversationId, { isPinned: !activeConv.isPinned })
       toast.success(activeConv.isPinned ? 'Unpinned' : 'Pinned')
     } catch {
-      toast.error('Failed to update conversation')
+      toast.error('Failed')
     }
   }
 
   const handleDelete = async () => {
     if (!activeConversationId) return
-    if (!confirm('Delete this conversation? This cannot be undone.')) return
+    if (!confirm('Delete this conversation?')) return
     await deleteConversation(activeConversationId)
     router.push('/chat')
   }
@@ -82,15 +76,20 @@ export function ChatHeader({ onToggleSidebar, sidebarCollapsed }: ChatHeaderProp
   return (
     <>
       <TooltipProvider>
-        <div className="flex h-14 items-center gap-2 border-b border-border px-4 shrink-0">
-          {/* Sidebar toggle */}
-          {sidebarCollapsed && (
-            <Button variant="ghost" size="icon-sm" onClick={onToggleSidebar}>
-              <Menu className="h-4 w-4" />
-            </Button>
-          )}
+        <div className="flex h-12 md:h-14 items-center gap-2 border-b border-border px-3 md:px-4 shrink-0">
 
-          {/* Conversation title */}
+          {/* Mobile: sidebar toggle */}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="md:hidden text-muted-foreground shrink-0"
+            onClick={() => window.dispatchEvent(new CustomEvent('sidebar-open'))}
+            aria-label="Open sidebar"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+
+          {/* Bot icon + title */}
           <div className="flex-1 min-w-0 flex items-center gap-2">
             <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               <Bot className="h-4 w-4 text-primary" />
@@ -98,7 +97,7 @@ export function ChatHeader({ onToggleSidebar, sidebarCollapsed }: ChatHeaderProp
             {activeConv ? (
               <button
                 onClick={() => { setNewTitle(activeConv.title); setRenameOpen(true) }}
-                className="truncate text-sm font-medium text-foreground hover:text-primary transition-colors max-w-xs"
+                className="truncate text-sm font-medium text-foreground hover:text-primary transition-colors"
               >
                 {activeConv.title}
               </button>
@@ -107,19 +106,24 @@ export function ChatHeader({ onToggleSidebar, sidebarCollapsed }: ChatHeaderProp
             )}
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2">
+          {/* Right actions */}
+          <div className="flex items-center gap-1">
             <TokenStatus />
 
             {activeConversationId && (
-              <div className="flex items-center gap-1">
+              <>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon-sm" onClick={handleShare} className="text-muted-foreground">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={handleShare}
+                      className="text-muted-foreground hidden sm:flex"
+                    >
                       <Share2 className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Share conversation</TooltipContent>
+                  <TooltipContent>Share</TooltipContent>
                 </Tooltip>
 
                 <DropdownMenu>
@@ -130,25 +134,25 @@ export function ChatHeader({ onToggleSidebar, sidebarCollapsed }: ChatHeaderProp
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem onClick={() => { setNewTitle(activeConv?.title ?? ''); setRenameOpen(true) }}>
-                      <Edit2 className="h-4 w-4" /> Rename
+                      <Edit2 className="h-4 w-4 mr-2" /> Rename
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handlePin}>
-                      <Pin className="h-4 w-4" />
+                      <Pin className="h-4 w-4 mr-2" />
                       {activeConv?.isPinned ? 'Unpin' : 'Pin'}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleShare}>
-                      <Share2 className="h-4 w-4" /> Share
+                      <Share2 className="h-4 w-4 mr-2" /> Share
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
                       onClick={handleDelete}
                     >
-                      <Trash2 className="h-4 w-4" /> Delete
+                      <Trash2 className="h-4 w-4 mr-2" /> Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>
+              </>
             )}
           </div>
         </div>
@@ -156,7 +160,7 @@ export function ChatHeader({ onToggleSidebar, sidebarCollapsed }: ChatHeaderProp
 
       {/* Rename Dialog */}
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-sm mx-4">
           <DialogHeader>
             <DialogTitle>Rename Conversation</DialogTitle>
           </DialogHeader>
@@ -167,9 +171,9 @@ export function ChatHeader({ onToggleSidebar, sidebarCollapsed }: ChatHeaderProp
             onKeyDown={(e) => e.key === 'Enter' && handleRename()}
             autoFocus
           />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRenameOpen(false)}>Cancel</Button>
-            <Button onClick={handleRename} loading={renaming} disabled={!newTitle.trim()}>Save</Button>
+          <DialogFooter className="flex-row gap-2">
+            <Button variant="outline" className="flex-1" onClick={() => setRenameOpen(false)}>Cancel</Button>
+            <Button className="flex-1" onClick={handleRename} loading={renaming} disabled={!newTitle.trim()}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

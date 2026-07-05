@@ -5,6 +5,7 @@ export type AIProvider =
   | 'xai'
   | 'perplexity'
   | 'ollama'
+  | 'groq'
   | 'custom'
 
 export interface AIModel {
@@ -52,7 +53,11 @@ export interface AIRequestOptions {
   messages: AIMessage[]
   systemPrompt?: string
   temperature?: number
+  topP?: number
+  repeatPenalty?: number
   maxTokens?: number
+  contextLength?: number
+  stop?: string[]
   tools?: AITool[]
   toolChoice?: 'auto' | 'required' | 'none' | { type: 'function'; function: { name: string } }
   stream?: boolean

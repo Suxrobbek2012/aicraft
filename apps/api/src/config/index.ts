@@ -40,6 +40,16 @@ CORS_ORIGINS: z.string().default('http://localhost:3011'),
   PERPLEXITY_API_KEY: z.string().optional(),
   PERPLEXITY_DEFAULT_MODEL: z.string().default('llama-3.1-sonar-large-128k-online'),
 
+  GROQ_API_KEY: z.string().optional(),
+  GROQ_API_KEY_2: z.string().optional(),
+  GROQ_API_KEY_3: z.string().optional(),
+  GROQ_API_KEY_4: z.string().optional(),
+  GROQ_API_KEY_5: z.string().optional(),
+  GROQ_API_KEY_6: z.string().optional(),
+  GROQ_DEFAULT_MODEL: z.string().default('llama-3.3-70b-versatile'),
+
+  HF_API_KEY: z.string().optional(),
+
   OLLAMA_BASE_URL: z.string().default('http://localhost:11434'),
   OLLAMA_DEFAULT_MODEL: z.string().default('llama3.2:1b'),
   // OLLAMA_DEFAULT_MODEL: z.string().default('llama3.2:3b'),

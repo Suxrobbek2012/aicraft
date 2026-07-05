@@ -37,12 +37,10 @@ export const useAuthStore = create<AuthState>()(
           }
 
           setAccessToken(result.accessToken)
-          // Reset chat model to local aicraft defaults on login
           const { useChatStore } = await import('@/store/chat.store')
           const chatState = useChatStore.getState()
-          if (chatState.selectedProvider !== 'ollama') {
-            chatState.setSelectedModel('llama3.2:1b', 'ollama')
-            // chatState.setSelectedModel('llama3.2:3b', 'ollama')
+          if (chatState.selectedProvider !== 'groq') {
+            chatState.setSelectedModel('llama-3.3-70b-versatile', 'groq')
           }
           set({ user: result.user, isAuthenticated: true, isLoading: false })
           return {}
@@ -79,7 +77,6 @@ export const useAuthStore = create<AuthState>()(
           const { data } = await api.get('/auth/me')
           set({ user: data.data, isAuthenticated: true, isLoading: false })
         } catch (err) {
-          // Only clear auth on explicit 401 Unauthorized, not on network errors
           const status = (err as import('axios').AxiosError)?.response?.status
           if (status === 401) {
             clearAuth()
@@ -92,9 +89,7 @@ export const useAuthStore = create<AuthState>()(
 
       updateUser: (partial) => {
         const current = get().user
-        if (current) {
-          set({ user: { ...current, ...partial } })
-        }
+        if (current) set({ user: { ...current, ...partial } })
       },
 
       clearError: () => set({ error: null }),
@@ -102,6 +97,21 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'go-ai-auth',
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+      // Hydration bo'lganda token localStorage dan tiklaymiz
+      onRehydrateStorage: () => (state) => {
+        if (state?.isAuthenticated) {
+          // localStorage dan tokenni in-memory ga ko'chiramiz
+          if (typeof window !== 'undefined') {
+            const savedToken = localStorage.getItem('token')
+            if (savedToken) {
+              setAccessToken(savedToken)
+            } else {
+              // Token yo'q — fetchMe orqali refresh cookie ishlatiladi
+              state.fetchMe()
+            }
+          }
+        }
+      },
     }
   )
 )

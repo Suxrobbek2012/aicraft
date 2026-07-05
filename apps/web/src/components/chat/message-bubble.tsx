@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
-import { cn, getModelIcon, formatDate } from '@/lib/utils'
+import { cn, getModelIcon, getModelDisplayName, formatDate } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth.store'
 import copy from 'copy-to-clipboard'
 import toast from 'react-hot-toast'
@@ -83,8 +83,8 @@ export const MessageBubble = memo(function MessageBubble({
           {!isUser && message.model && (
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs text-muted-foreground flex items-center gap-1">
-                {getModelIcon(message.provider ?? 'openai')}
-                {message.model}
+                {getModelIcon(message.provider ?? 'groq')}
+                {getModelDisplayName(message.model)}
               </span>
               {isStreaming && (
                 <Badge variant="green" className="text-xs py-0 px-1.5 animate-pulse">
@@ -107,7 +107,11 @@ export const MessageBubble = memo(function MessageBubble({
               <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
             ) : (
               <div className={cn('prose-chat text-sm', collapsed && 'max-h-48 overflow-hidden')}>
-                <MarkdownContent content={message.content} isStreaming={isStreaming} />
+                {/* Streaming paytida plain text — ReactMarkdown ni skip qilib freeze oldini olamiz */}
+                {isStreaming
+                  ? <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
+                  : <MarkdownContent content={message.content} />
+                }
               </div>
             )}
 
@@ -215,7 +219,7 @@ function AttachmentPreview({ attachment }: { attachment: { id: string; name: str
   )
 }
 
-function MarkdownContent({ content, isStreaming }: { content: string; isStreaming?: boolean }) {
+function MarkdownContent({ content }: { content: string }) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -258,6 +262,27 @@ function MarkdownContent({ content, isStreaming }: { content: string; isStreamin
         },
         td({ children }) {
           return <td className="border border-border px-3 py-2 text-xs">{children}</td>
+        },
+        img({ src, alt }) {
+          if (!src) return null
+          // Handle both external URLs and data URLs
+          const isData = src.startsWith('data:')
+          const isExternal = src.startsWith('http')
+          if (!isData && !isExternal) return null
+          return (
+            <span className="block my-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={src}
+                alt={alt ?? 'Generated image'}
+                className="rounded-xl max-w-full max-h-[600px] object-contain border border-border shadow-lg"
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+              />
+              {alt && <span className="block text-xs text-muted-foreground mt-1 italic">{alt}</span>}
+            </span>
+          )
         },
       }}
     >

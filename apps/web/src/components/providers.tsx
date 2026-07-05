@@ -3,7 +3,8 @@
 import { ThemeProvider } from 'next-themes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getAccessToken, setAccessToken } from '@/lib/api'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -18,6 +19,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
         },
       })
   )
+
+  // App boshlanganda localStorage dagi tokenni in-memory ga tiklash
+  useEffect(() => {
+    const savedToken = localStorage.getItem('token')
+    if (savedToken && !getAccessToken()) {
+      setAccessToken(savedToken)
+    }
+  }, [])
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -40,7 +49,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
               fontSize: '14px',
             },
             success: {
-              iconTheme: { primary: '#22c55e', secondary: '#111111' },
+              iconTheme: { primary: '#f59e0b', secondary: '#111111' },
             },
             error: {
               iconTheme: { primary: '#ef4444', secondary: '#111111' },

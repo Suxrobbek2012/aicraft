@@ -6,6 +6,7 @@ import { GoogleProvider } from './providers/google.provider'
 import { OllamaProvider } from './providers/ollama.provider'
 import { XAIProvider } from './providers/xai.provider'
 import { PerplexityProvider } from './providers/perplexity.provider'
+import { GroqProvider } from './providers/groq.provider'
 
 export interface ProviderConfig {
   openai?: { apiKey: string; orgId?: string }
@@ -14,6 +15,7 @@ export interface ProviderConfig {
   xai?: { apiKey: string }
   perplexity?: { apiKey: string }
   ollama?: { baseUrl?: string }
+  groq?: { apiKey: string }
 }
 
 export class ProviderRegistry {
@@ -37,6 +39,9 @@ export class ProviderRegistry {
     }
     if (config.perplexity?.apiKey) {
       this.providers.set('perplexity', new PerplexityProvider(config.perplexity.apiKey))
+    }
+    if (config.groq?.apiKey) {
+      this.providers.set('groq' as AIProvider, new GroqProvider(config.groq.apiKey))
     }
 
     // Ollama is always registered as a local fallback

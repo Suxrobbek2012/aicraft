@@ -10,7 +10,7 @@ import { api } from '@/lib/api'
 function VerifyEmailContent() {
   const params = useSearchParams()
   const router = useRouter()
-  const token = params.get('token') ?? ''
+  const token = params?.get('token') ?? ''
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
 
   useEffect(() => {

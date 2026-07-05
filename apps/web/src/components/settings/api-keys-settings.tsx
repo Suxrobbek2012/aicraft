@@ -82,7 +82,7 @@ export function ApiKeysSettings() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h2 className="text-xl font-semibold mb-1">API Keys</h2>
           <p className="text-sm text-muted-foreground">Manage API access for third-party integrations</p>
