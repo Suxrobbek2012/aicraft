@@ -22,15 +22,23 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Generate Prisma client
-        run: cd packages/database && npx prisma generate
+      - name: Build shared package
+        run: npm run build --workspace=@go-ai/shared
 
-      - name: Type check
+      - name: Build ai-core package
+        run: npm run build --workspace=@go-ai/ai-core
+
+      - name: Generate Prisma client & build database
+        run: |
+          cd packages/database && npx prisma generate
+          npm run build --workspace=@go-ai/database
+
+      - name: Type check API
         run: npx tsc --noEmit --project apps/api/tsconfig.json
         continue-on-error: true
 
-      - name: Lint
-        run: npm run lint
+      - name: Lint web
+        run: npm run lint:web
         continue-on-error: true
 
   build:
@@ -52,7 +60,7 @@ jobs:
       - name: Generate Prisma client
         run: cd packages/database && npx prisma generate
 
-      - name: Build packages
+      - name: Build all packages
         run: npm run build
         continue-on-error: true
 
