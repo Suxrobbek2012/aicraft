@@ -107,13 +107,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
         id: `temp-user-${Date.now()}`,
         conversationId: activeConversationId ?? '',
         role: 'user', content, status: 'complete',
-        attachments: [], createdAt: new Date(), updatedAt: new Date(),
+        attachments: [], createdAt: new Date(),
       }
       const tempImgMsg: Message = {
         id: `temp-img-${Date.now()}`,
         conversationId: activeConversationId ?? '',
         role: 'assistant', content: '🎨 Rasm yaratilmoqda...', status: 'streaming',
-        createdAt: new Date(), updatedAt: new Date(),
+        createdAt: new Date(),
       }
 
       set((state) => ({
