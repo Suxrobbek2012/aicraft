@@ -53,13 +53,33 @@ export async function buildApp(): Promise<FastifyInstance> {
   // ─── Core Plugins ────────────────────────────────────────────────────────────
 
   // CORS MUST be registered before routes
+  const allowedOrigins = [config.CORS_ORIGINS]
+    .flatMap((v) => v.split(','))
+    .map((s) => s.trim())
+    .filter(Boolean)
+
   await app.register(cors, {
-    origin: [config.CORS_ORIGINS].flatMap((v) => v.split(',')).map((s) => s.trim()).filter(Boolean),
+    origin: (origin, cb) => {
+      // Allow requests with no origin (mobile apps, curl, server-to-server)
+      if (!origin) return cb(null, true)
+      // Allow all vercel.app subdomains and configured origins
+      if (
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.onrender.com') ||
+        allowedOrigins.includes(origin)
+      ) {
+        return cb(null, true)
+      }
+      // Allow localhost in development
+      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        return cb(null, true)
+      }
+      return cb(new Error('Not allowed by CORS'), false)
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-Request-ID'],
     preflight: true,
-    // Ensure OPTIONS returns headers even if no route matches
     optionsSuccessStatus: 204,
   })
 
