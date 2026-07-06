@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc && tsc-alias",
+    "build": "tsc",
     "build:render": "cd ../.. && npm install && cd packages/shared && npx tsc && cd ../ai-core && npx tsc && cd ../database && npx prisma generate && npx tsc && cd ../../apps/api && npm run build",
     "start": "node dist/server.js",
     "lint": "eslint src/",
