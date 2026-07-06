@@ -6,7 +6,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "build:render": "cd ../.. && npm install && cd packages/shared && npx tsc && cd ../ai-core && npx tsc && cd ../database && npx prisma generate && npx tsc && cd ../../apps/api && npm run build",
-    "start": "node dist/server.js",
+    "start": "npx prisma migrate deploy --schema=../../packages/database/prisma/schema.prisma && npx prisma db seed --schema=../../packages/database/prisma/schema.prisma 2>/dev/null; node dist/server.js",
     "lint": "eslint src/",
     "test": "vitest run",
     "db:generate": "cd ../../packages/database && npm run db:generate",
