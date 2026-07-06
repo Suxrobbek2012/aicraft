@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install dependencies
 FROM base AS deps
-COPY package.json package-lock.json turbo.json ./
+COPY package.json package-lock.json ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/database/package.json ./packages/database/
