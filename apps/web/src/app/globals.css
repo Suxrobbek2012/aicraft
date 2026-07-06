@@ -671,21 +671,25 @@
 /* Chat window — mobilda to'g'ri o'lcham */
 @media (max-width: 767px) {
   .chat-window-messages-area {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
     padding-bottom: env(safe-area-inset-bottom);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .chat-window-input-panel {
-    padding: 0.5rem;
+    padding: 0.75rem;
     padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
     position: sticky;
     bottom: 0;
+    background: hsl(var(--background));
+    border-top: 1px solid hsl(var(--border));
   }
 
   /* Xabar bubble mobilda kengroq */
   .message-bubble-content {
-    max-width: calc(100vw - 3.5rem);
+    max-width: calc(100vw - 4rem) !important;
   }
 
   /* Hover effektlarni mobildan olib tashlash */
@@ -700,8 +704,19 @@
 
   /* Kod bloki — mobilda scroll */
   .code-block-wrapper {
-    max-width: calc(100vw - 2rem);
+    max-width: calc(100vw - 2.5rem);
     overflow-x: auto;
+  }
+
+  /* Input mobilda kichikroq */
+  .chat-window-input-panel input,
+  .chat-window-input-panel textarea {
+    font-size: 16px !important; /* iOS zoom oldini olish */
+  }
+
+  /* Scroll button mobilda pastroq */
+  .chat-window-scroll-button {
+    bottom: calc(90px + env(safe-area-inset-bottom)) !important;
   }
 }
 

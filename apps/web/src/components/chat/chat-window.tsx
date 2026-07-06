@@ -86,10 +86,10 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
   const showWelcome = convMessages.length === 0 && !isStreaming && !messagesLoading
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Messages area */}
       <div
-        className="chat-window-messages-area"
+        className="chat-window-messages-area flex-1 overflow-y-auto"
         onScroll={handleScroll}
         ref={scrollRef}
       >

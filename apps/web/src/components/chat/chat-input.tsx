@@ -220,7 +220,7 @@ export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={placeholder ?? 'Message aicraft... (Shift+Enter for new line)'}
+              placeholder={placeholder ?? 'Message aicraft...'}
               className="w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none leading-relaxed min-h-[44px] max-h-[300px]"
               minRows={1}
               maxRows={10}
