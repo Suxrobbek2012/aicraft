@@ -31,7 +31,6 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 apiuser
 
 COPY --from=builder --chown=apiuser:nodejs /app/apps/api/dist ./dist
-COPY --from=builder --chown=apiuser:nodejs /app/packages/database/generated ./packages/database/generated
 COPY --from=builder --chown=apiuser:nodejs /app/packages/database/prisma ./packages/database/prisma
 COPY --from=builder --chown=apiuser:nodejs /app/node_modules ./node_modules
 
