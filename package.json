@@ -14,7 +14,7 @@
     "build": "npm run build:shared && npm run build:ai-core && npm run build:database && npm run build:api && npm run build:web",
     "build:shared": "npm run build --workspace=@go-ai/shared",
     "build:ai-core": "npm run build --workspace=@go-ai/ai-core",
-    "build:database": "prisma generate --schema=packages/database/prisma/schema.prisma && npm run build --workspace=@go-ai/database",
+    "build:database": "cd packages/database && npx prisma generate && cd ../.. && npm run build --workspace=@go-ai/database",
     "build:api": "npm run build --workspace=@go-ai/api",
     "build:web": "npm run build --workspace=@go-ai/web",
     "db:migrate": "npm run db:migrate --workspace=@go-ai/database",
