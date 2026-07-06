@@ -53,7 +53,7 @@ export class GoogleProvider extends BaseAIProvider {
           return { role, parts: [{ text: msg.content }] }
         }
 
-        const parts: Part[] = (
+        const parts = (
           msg.content as Array<{
             type: string
             text?: string
@@ -68,7 +68,7 @@ export class GoogleProvider extends BaseAIProvider {
             return { inlineData: { mimeType, data } }
           }
           return { text: `[Image: ${url}]` }
-        })
+        }) as any[]
 
         return { role, parts }
       })
@@ -86,7 +86,7 @@ export class GoogleProvider extends BaseAIProvider {
     const lastMessage = options.messages[options.messages.length - 1]
     const chat = genModel.startChat({ history })
 
-    let lastParts: Part[]
+    let lastParts: any[]
     if (typeof lastMessage.content === 'string') {
       lastParts = [{ text: lastMessage.content }]
     } else {
@@ -100,7 +100,7 @@ export class GoogleProvider extends BaseAIProvider {
           return { inlineData: { mimeType: meta.split(':')[1].split(';')[0], data } }
         }
         return { text: `[Image: ${url}]` }
-      })
+      }) as any[]
     }
 
     const result = await chat.sendMessage(lastParts)
@@ -133,7 +133,7 @@ export class GoogleProvider extends BaseAIProvider {
     const lastMessage = options.messages[options.messages.length - 1]
     const chat = genModel.startChat({ history })
 
-    const lastParts: Part[] =
+    const lastParts: any[] =
       typeof lastMessage.content === 'string'
         ? [{ text: lastMessage.content }]
         : (
