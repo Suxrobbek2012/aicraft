@@ -783,16 +783,15 @@ export class ChatService {
             const nextKey = groqKeyManager.markCurrentExhausted(error.message)
 
             if (nextKey) {
-              this.app.log.warn(`🔄 Groq key rotated (attempt ${keyRetry})`)
+              this.app.log.warn(`🔄 Groq key rotated (attempt ${keyRetry}), trying next key`)
+              // Groq provider da yangi key o'rnatish
               try {
-                const { ProviderRegistry } = await import('@go-ai/ai-core')
-                ;(this.ai as any).providers?.groq?.updateApiKey?.(nextKey)
-                const newProvider = this.ai.get('groq')
-                if (newProvider && typeof (newProvider as any).setApiKey === 'function') {
-                  ;(newProvider as any).setApiKey(nextKey)
+                const groqProvider = this.ai.get('groq') as any
+                if (groqProvider && typeof groqProvider.setApiKey === 'function') {
+                  groqProvider.setApiKey(nextKey)
                 }
               } catch {
-                // Provider API key update supported bo'lmasa, davom etamiz
+                // ignore
               }
               fullContent = ''
               continue

@@ -26,6 +26,16 @@ export class GroqProvider extends BaseAIProvider {
     })
   }
 
+  /** Key rotation uchun — yangi API key bilan client qayta yaratish */
+  setApiKey(apiKey: string): void {
+    this.client = new OpenAI({
+      apiKey,
+      baseURL: 'https://api.groq.com/openai/v1',
+      maxRetries: 3,
+      timeout: 60_000,
+    })
+  }
+
   async isAvailable(): Promise<boolean> {
     try {
       await this.client.models.list()
