@@ -54,11 +54,11 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-[100dvh] ios-h-fix overflow-hidden bg-background">
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black/50 md:hidden"
+          className="fixed inset-0 z-20 bg-black/60 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -66,10 +66,10 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
       {/* Sidebar */}
       <div
         className={[
-          'fixed md:relative inset-y-0 left-0 z-30 h-full',
+          'fixed md:relative inset-y-0 left-0 z-30',
+          'h-[100dvh] w-64 md:w-auto',
           'transition-transform duration-300 ease-in-out will-change-transform',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
-          sidebarOpen ? 'w-64' : 'md:w-14 w-64',
         ].join(' ')}
       >
         <Sidebar
@@ -79,7 +79,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* Main content */}
-      <main className="flex-1 overflow-hidden flex flex-col min-w-0">
+      <main className="flex-1 min-w-0 flex flex-col h-[100dvh] overflow-hidden">
         {children}
       </main>
     </div>

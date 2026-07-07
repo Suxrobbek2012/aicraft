@@ -1,19 +1,22 @@
 'use client'
 
-import React, { useEffect, useRef, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, ArrowDown } from 'lucide-react'
-import { MessageBubble } from '@/components/chat/message-bubble'
+import React, { useEffect } from 'react'
+import { motion } from 'framer-motion'
+import { Code, Brain, Calculator, ImageIcon } from 'lucide-react'
 import { ChatInput } from '@/components/chat/chat-input'
-import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { VirtualMessageList } from '@/components/chat/virtual-message-list'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useChatStore } from '@/store/chat.store'
 import { useAuthStore } from '@/store/auth.store'
 import { cn } from '@/lib/utils'
 import { AicraftLogo } from '@/components/ui/aicraft-logo'
 
-const WELCOME_SUGGESTIONS: never[] = []
+const WELCOME_SUGGESTIONS = [
+  { icon: <Code className="h-4 w-4" />, text: 'React component yozib ber login formasi' },
+  { icon: <Brain className="h-4 w-4" />, text: 'Nima uchun osmon ko\'k rangda?' },
+  { icon: <Calculator className="h-4 w-4" />, text: 'Hisobla: 245 * 378 + 15623 / 45' },
+  { icon: <ImageIcon className="h-4 w-4" />, text: 'Rasm chiz: moviy okean va quyosh botishi' },
+]
 
 interface ChatWindowProps {
   conversationId?: string
@@ -30,17 +33,13 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
     sendMessage,
   } = useChatStore()
 
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const [showScrollButton, setShowScrollButton] = React.useState(false)
   const [messagesLoading, setMessagesLoading] = React.useState(false)
-  const prevActiveConvId = useRef<string | null>(null)
 
   const convId = conversationId ?? activeConversationId ?? 'new'
   const convMessages = messages[convId] ?? []
 
-  // When a new conversation is created (activeConversationId changes),
-  // update URL without remounting the page using history API
+  // When a new conversation is created, update URL
+  const prevActiveConvId = React.useRef<string | null>(null)
   useEffect(() => {
     if (
       !conversationId &&
@@ -48,7 +47,6 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
       activeConversationId !== prevActiveConvId.current
     ) {
       prevActiveConvId.current = activeConversationId
-      // Use history.replaceState to avoid page remount
       window.history.replaceState(null, '', `/chat/${activeConversationId}`)
     }
   }, [activeConversationId, conversationId])
@@ -61,23 +59,6 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
     }
   }, [convId])
 
-  // Auto-scroll to bottom on new messages
-  useEffect(() => {
-    if (isStreaming || convMessages.length > 0) {
-      scrollToBottom()
-    }
-  }, [convMessages.length, isStreaming])
-
-  const scrollToBottom = useCallback(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [])
-
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget
-    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
-    setShowScrollButton(distanceFromBottom > 200)
-  }, [])
-
   const handleSuggestionClick = (text: string) => {
     sendMessage(text)
   }
@@ -86,67 +67,34 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
   const showWelcome = convMessages.length === 0 && !isStreaming && !messagesLoading
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-[100dvh] overflow-hidden">
       {/* Messages area */}
-      <div
-        className="chat-window-messages-area flex-1 overflow-y-auto"
-        onScroll={handleScroll}
-        ref={scrollRef}
-      >
-        <div className="max-w-3xl mx-auto px-4">
-          {messagesLoading ? (
+      {messagesLoading ? (
+        <div className="chat-window-messages-area flex-1 overflow-y-auto overscroll-contain px-4">
+          <div className="max-w-3xl mx-auto">
             <MessagesSkeleton />
-          ) : showWelcome ? (
+          </div>
+        </div>
+      ) : showWelcome ? (
+        <div className="chat-window-messages-area flex-1 overflow-y-auto overscroll-contain px-4">
+          <div className="max-w-3xl mx-auto">
             <WelcomeScreen
               userName={user?.displayName}
               onSuggestionClick={handleSuggestionClick}
             />
-          ) : (
-            <div className="py-4 space-y-1">
-              <AnimatePresence initial={false}>
-                {convMessages.map((message, index) => (
-                  <MessageBubble
-                    key={message.id}
-                    message={message}
-                    isStreaming={isStreaming && message.id === streamingMessageId}
-                    showAvatar={
-                      index === 0 ||
-                      convMessages[index - 1]?.role !== message.role
-                    }
-                  />
-                ))}
-              </AnimatePresence>
-              <div ref={bottomRef} className="h-4" />
-            </div>
-          )}
+          </div>
         </div>
-
-        {/* Scroll to bottom button */}
-        <AnimatePresence>
-          {showScrollButton && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="chat-window-scroll-button"
-            >
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={scrollToBottom}
-                className="rounded-full shadow-lg gap-1.5 border border-border"
-              >
-                <ArrowDown className="h-3.5 w-3.5" />
-                Scroll to bottom
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      ) : (
+        <VirtualMessageList
+          messages={convMessages}
+          isStreaming={isStreaming}
+          streamingMessageId={streamingMessageId}
+        />
+      )}
 
       {/* Input area */}
       <div className="chat-window-input-panel">
-        <div className="max-w-3xl mx-auto px-4 py-4">
+        <div className="max-w-3xl mx-auto px-2 md:px-4 py-2 md:py-4">
           <ChatInput />
         </div>
       </div>
@@ -162,22 +110,39 @@ function WelcomeScreen({
   onSuggestionClick: (text: string) => void
 }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100svh-180px)] py-8 px-4">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-160px)] py-8 px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="text-center"
+        className="text-center w-full max-w-lg"
       >
         <div className="flex items-center justify-center mb-4">
           <AicraftLogo size={40} showText={false} />
         </div>
         <h1 className="text-2xl md:text-3xl font-semibold text-foreground mb-2">
-          {userName ? `Hello, ${userName.split(' ')[0]} 👋` : 'Welcome to aicraft'}
+          {userName ? `Salom, ${userName.split(' ')[0]} 👋` : 'Aicraftga xush kelibsiz!'}
         </h1>
-        <p className="text-muted-foreground text-sm md:text-base">
-          How can I help you today?
+        <p className="text-muted-foreground text-sm md:text-base mb-8">
+          Sizga qanday yordam bera olaman?
         </p>
+
+        {/* Suggestion chips */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {WELCOME_SUGGESTIONS.map((suggestion, i) => (
+            <motion.button
+              key={i}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + i * 0.05 }}
+              onClick={() => onSuggestionClick(suggestion.text)}
+              className="flex items-center gap-2.5 rounded-xl border border-border bg-card/50 hover:bg-card hover:border-primary/30 px-4 py-3 text-sm text-left text-foreground/80 hover:text-foreground transition-all duration-200 group"
+            >
+              <span className="text-primary shrink-0">{suggestion.icon}</span>
+              <span className="truncate">{suggestion.text}</span>
+            </motion.button>
+          ))}
+        </div>
       </motion.div>
     </div>
   )

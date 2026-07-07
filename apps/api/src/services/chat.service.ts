@@ -26,6 +26,8 @@ import { cacheGet, cacheSet, CACHE_PREFIX } from '../lib/redis'
 import { SearchService } from './search.service'
 import { getRelevantMemories } from './memory.service'
 import { groqKeyManager } from '../lib/groq-key-manager'
+import { calculateService } from './calculate.service'
+import { modelRouter } from '../lib/model-router'
 
 // ============================================================
 // 1. EMOJI VA KAYFIYAT KLASSI
@@ -355,7 +357,10 @@ When reviewing code, structure feedback as:
 - Lead with the answer/code, then explain briefly.
 - Use numbered steps for sequences, bullets for lists.
 
-You are the most technically rigorous coding assistant available. Every response should be something a senior engineer would approve in a code review without changes.`
+You are the most technically rigorous coding assistant available. Every response should be something a senior engineer would approve in a code review without changes.
+
+## CALCULATOR TOOL
+You have access to a built-in calculator that can evaluate any mathematical expression accurately. When the user asks a math question, compute the result using the calculator results provided in context if available, and show the answer step-by-step. For expressions like "210213+31213*121/34", first compute the result, then explain the steps.`
   }
 
   static getStylePrompt(isCodingIntent: boolean): string {
@@ -389,6 +394,78 @@ export class ChatService {
   ) {
     this.uzbekFilter = new UzbekConversationFilter()
     this.emojiManager = new EmojiMoodManager()
+  }
+
+  // ─── Token estimation constants ───────────────────────────
+  // 1 token ≈ 4 chars (lotin/uz, en) yoki 2-3 chars (kirill)
+  private static readonly CHARS_PER_TOKEN = 4
+  // Output tokens uchun 25% zaxira (modelning maxOutputTokens o'rniga)
+  private static readonly OUTPUT_BUFFER_RATIO = 0.25
+
+  /**
+   * Matnning taxminiy token sonini hisoblaydi (rough estimate)
+   * Groq modellari uchun 1 token ≈ 4 belgi
+   */
+  static estimateTokens(text: string): number {
+    if (!text) return 0
+    return Math.ceil(text.length / ChatService.CHARS_PER_TOKEN)
+  }
+
+  /**
+   * AI messages massivini context window'ga moslab kesadi.
+   * Eng eski history messagelardan boshlab tozalaydi,
+   * system prompt va eng oxirgi user message saqlanadi.
+   */
+  private truncateMessagesToFit(
+    messages: AIMessage[],
+    contextWindow: number
+  ): AIMessage[] {
+    if (messages.length <= 2) return messages // system prompt + current message
+
+    // Output buffer: context window'ning 25% i output uchun
+    const maxInputTokens = Math.floor(contextWindow * (1 - ChatService.OUTPUT_BUFFER_RATIO))
+
+    // Barcha message'larning token sonini hisoblaymiz
+    const tokenCounts = messages.map(m => {
+      const text = typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
+      return ChatService.estimateTokens(text)
+    })
+
+    const totalTokens = tokenCounts.reduce((a, b) => a + b, 0)
+
+    // Agar context window'ga sig'sa, truncate qilmaymiz
+    if (totalTokens <= maxInputTokens) return messages
+
+    // System prompt (index 0) va style prompt (index 1) saqlanadi
+    // history messagelardan (index 2 va undan keyin) truncate qilamiz
+    // Eng eski history messagelar birinchi o'chiriladi
+    let runningTotal = 0
+    const truncated: AIMessage[] = []
+
+    for (let i = 0; i < messages.length; i++) {
+      // System va style prompt har doim saqlanadi
+      if (i <= 1) {
+        truncated.push(messages[i])
+        runningTotal += tokenCounts[i]
+        continue
+      }
+
+      // Oxirgi user message (eng yangi) har doim saqlanadi
+      if (i === messages.length - 1) {
+        truncated.push(messages[i])
+        runningTotal += tokenCounts[i]
+        continue
+      }
+
+      // History messagelar — faqat sig'sa qo'shiladi
+      if (runningTotal + tokenCounts[i] <= maxInputTokens) {
+        truncated.push(messages[i])
+        runningTotal += tokenCounts[i]
+      }
+      // Sig'masa — skip (eski history message tashlab yuboriladi)
+    }
+
+    return truncated
   }
 
   // ============================================================
@@ -493,10 +570,21 @@ export class ChatService {
       // ─── 3b. Detect coding intent (temperature/maxTokens/style uchun) ──
       const isCoding = this.detectCodingIntent(input.content)
 
-      // ─── 4. Resolve model & provider ────────────────────────────
+      // ─── 3c. Detect image attachments ──────────────────────────
+      const hasImages = !!(input.attachmentIds?.length)
+
+      // ─── 4. Smart Model Routing ────────────────────────────────
       const userSettings = user.settings as any || {}
       let provider = (input.provider ?? userSettings.defaultProvider ?? 'groq') as AIProvider
       let model = input.model ?? userSettings.defaultModel ?? 'llama-3.3-70b-versatile'
+
+      // User manual override bo'lmasa, smart routing ishlaydi
+      if (!input.model && !userSettings.defaultModel) {
+        const route = modelRouter.route(input.content, hasImages)
+        provider = route.provider as AIProvider
+        model = route.model
+        this.app.log.info(`🤖 Smart route: ${route.model} (${route.reason})`)
+      }
 
       if (!this.ai.has(provider)) {
         const available = await this.ai.getAvailableProviders()
@@ -575,7 +663,7 @@ export class ChatService {
       })
 
       // ─── 7. Build AI messages ────────────────────────────────────
-      const aiMessages: AIMessage[] = []
+      let aiMessages: AIMessage[] = []
 
       // System prompt (til bo'yicha, pro full-stack coder)
       aiMessages.push({
@@ -613,6 +701,25 @@ export class ChatService {
       // Current user message
       const userContent = await this.buildUserContent(input)
       aiMessages.push({ role: 'user', content: userContent })
+
+      // ─── 7b. Truncate messages to fit context window ───────────
+      try {
+        const modelConfig = await this.prisma.aIModelConfig.findUnique({
+          where: { modelId: model },
+          select: { contextWindow: true },
+        })
+        const contextWindow = modelConfig?.contextWindow ?? 128000
+        const beforeCount = aiMessages.length
+        aiMessages = this.truncateMessagesToFit(aiMessages, contextWindow)
+        if (aiMessages.length < beforeCount) {
+          this.app.log.info(
+            `📐 Truncated ${beforeCount - aiMessages.length} message(s) to fit ${contextWindow} context window`
+          )
+        }
+      } catch (err) {
+        // Truncation xatosi — ignore, davom etamiz
+        this.app.log.warn({ err }, 'Truncation error (non-fatal)')
+      }
 
       // ─── 8. Save user message ────────────────────────────────────
       await this.prisma.message.create({
@@ -663,6 +770,15 @@ export class ChatService {
           }
         } catch (err) {
           this.app.log.error(err, 'Failed to fetch memories')
+        }
+      }
+
+      // 🧮 Math pre-calculation — AI ga yuborishdan oldin hisoblab qo'yamiz
+      if (!hasImages) {
+        const mathResult = calculateService.findAndEvaluate(input.content)
+        if (mathResult?.result) {
+          additionalContext += `\n\n[KALKULYATOR NATIJASI]\nIfoda: ${mathResult.expression}\nNatija: ${mathResult.result}\n(Eslatma: Foydalanuvchiga to'g'ri javobni ko'rsat, agar so'ralsa hisoblash bosqichlarini tushuntir.)`
+          yield { type: 'delta', delta: '🧮 Hisoblanmoqda...\n\n' }
         }
       }
 
@@ -777,7 +893,77 @@ export class ChatService {
         } catch (err) {
           const error = err as Error
 
-          // 429 / rate-limit xatoligi — keyingi keyga o'tish
+          // ─── So'rov juda katta (413) — contextni qisqartirib qayta urinish ───
+          if (groqKeyManager.isRequestTooLargeError(error) && provider === 'groq') {
+            keyRetry++
+            this.app.log.warn(`📐 Groq request too large (attempt ${keyRetry}), truncating messages`)
+
+            const modelConfig = await this.prisma.aIModelConfig.findUnique({
+              where: { modelId: model },
+              select: { contextWindow: true },
+            }).catch(() => null)
+            const contextWindow = modelConfig?.contextWindow ?? 128000
+
+            const reducedWindow = Math.floor(contextWindow * 0.6)
+            const beforeCount = aiMessages.length
+            aiMessages = this.truncateMessagesToFit(aiMessages, reducedWindow)
+
+            if (aiMessages.length < beforeCount) {
+              this.app.log.info(`📐 Re-truncated to ${aiMessages.length} messages (${reducedWindow} window)`)
+              fullContent = ''
+              continue
+            }
+
+            const tooLargeMsg = detectedLanguage === 'uz'
+              ? 'Xabar juda katta. Iltimos, matnni qisqartirib qayta yuboring. 😔'
+              : detectedLanguage === 'ru'
+              ? 'Сообщение слишком большое. Пожалуйста, сократите текст. 😔'
+              : 'Message too large. Please shorten your text and try again. 😔'
+
+            await this.prisma.message.update({
+              where: { id: assistantMessage.id },
+              data: { status: 'error', content: tooLargeMsg },
+            })
+            yield { type: 'error', error: tooLargeMsg }
+            return
+          }
+
+          // ─── Vaqtinchalik token limiti (TPM/TPD) — temporary cool-down ───
+          if (groqKeyManager.isTokenLimitError(error) && provider === 'groq') {
+            keyRetry++
+            const nextKey = groqKeyManager.markCurrentExhausted(error.message, { temporary: true })
+
+            if (nextKey) {
+              this.app.log.warn(`⏳ Groq TPM limit (attempt ${keyRetry}), switching key temporarily`)
+              try {
+                const groqProvider = this.ai.get('groq') as any
+                if (groqProvider && typeof groqProvider.setApiKey === 'function') {
+                  groqProvider.setApiKey(nextKey)
+                }
+              } catch { /* ignore */ }
+              fullContent = ''
+              continue
+            }
+
+            if (groqKeyManager.allExhausted()) {
+              this.app.log.warn('⏳ All keys temporarily exhausted (TPM), waiting 1s...')
+              await new Promise(r => setTimeout(r, 1000))
+              groqKeyManager.getStatus()
+              const retryKey = groqKeyManager.getCurrentKey()
+              if (retryKey) {
+                try {
+                  const groqProvider = this.ai.get('groq') as any
+                  if (groqProvider && typeof groqProvider.setApiKey === 'function') {
+                    groqProvider.setApiKey(retryKey)
+                  }
+                } catch { /* ignore */ }
+                fullContent = ''
+                continue
+              }
+            }
+          }
+
+          // ─── 429 / rate-limit xatoligi — keyingi keyga o'tish (24h cooldown) ───
           if (groqKeyManager.isRateLimitError(error) && provider === 'groq') {
             keyRetry++
             const nextKey = groqKeyManager.markCurrentExhausted(error.message)

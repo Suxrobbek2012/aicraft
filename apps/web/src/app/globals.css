@@ -4,7 +4,7 @@
 
 /*
   ============================================================
-  "GOLDEN HOUR" — ZAMONAVIY SHAHAR INTERFEYSI
+  "GOLDEN HOUR" v2 — PREMIUM URBAN INTERFACE
   ============================================================
   1. Mobil-first, minimal va nafis dizayn
   2. Interaktiv elementlar — mikro-interaksiyalar bilan
@@ -12,6 +12,7 @@
   4. Yumshoq shisha (glassmorphism) qatlamlari
   5. Oltin va kulrang ranglar uyg'unligi
   6. Har bir elementda "nafas oluvchi" animatsiyalar
+  7. Mobile-optimized — heavy effektlar faqat desktop da
   ============================================================
 */
 
@@ -23,97 +24,109 @@
 
 @layer base {
   :root {
-    /* Yengil rejim — och to'q kulrang, oltin aksentlar */
-    --background: 220 15% 94%;
-    --foreground: 220 20% 12%;
-    --card: 220 15% 97%;
-    --card-foreground: 220 20% 12%;
-    --popover: 220 15% 97%;
-    --popover-foreground: 220 20% 12%;
+    /* Yengil rejim — premium ochiq ranglar */
+    --background: 220 18% 96%;
+    --foreground: 220 22% 10%;
+    --card: 220 15% 98%;
+    --card-foreground: 220 22% 10%;
+    --popover: 220 15% 98%;
+    --popover-foreground: 220 22% 10%;
 
-    --primary: 42 85% 45%;
-    --primary-glow: 42 90% 52%;
-    --primary-foreground: 220 20% 8%;
+    --primary: 42 88% 42%;
+    --primary-glow: 42 92% 50%;
+    --primary-foreground: 220 22% 6%;
 
-    --secondary: 220 12% 90%;
-    --secondary-foreground: 220 18% 18%;
+    --secondary: 220 14% 91%;
+    --secondary-foreground: 220 18% 16%;
 
-    --muted: 220 10% 91%;
-    --muted-foreground: 220 10% 42%;
+    --muted: 220 12% 92%;
+    --muted-foreground: 220 12% 38%;
 
-    --accent: 42 85% 50%;
-    --accent-foreground: 220 20% 10%;
+    --accent: 42 88% 48%;
+    --accent-foreground: 220 22% 8%;
 
-    --pop: 42 90% 48%;
-    --pop-foreground: 220 20% 8%;
-    --pop-2: 36 80% 52%;
+    --pop: 42 92% 46%;
+    --pop-foreground: 220 22% 6%;
+    --pop-2: 36 82% 50%;
 
-    --destructive: 0 75% 50%;
+    --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 12% 84%;
-    --input: 220 12% 90%;
-    --ring: 42 85% 45%;
+    --border: 220 12% 86%;
+    --input: 220 12% 92%;
+    --ring: 42 88% 42%;
     --radius: 1rem;
 
-    --aurora-1: 42 80% 55%;
-    --aurora-2: 36 75% 58%;
-    --aurora-3: 48 70% 52%;
+    --aurora-1: 42 82% 52%;
+    --aurora-2: 36 78% 55%;
+    --aurora-3: 48 72% 50%;
 
-    --grain-opacity: 0.025;
-    --shadow-soft: 
-      0 2px 12px -4px hsl(220 20% 20% / 0.08),
-      0 8px 32px -8px hsl(220 20% 20% / 0.12);
-    --shadow-glow: 
-      0 0 0 1px hsl(var(--primary) / 0.18),
-      0 8px 32px -8px hsl(var(--primary) / 0.35);
+    --grain-opacity: 0.02;
+    --shadow-soft:
+      0 1px 3px hsl(220 20% 20% / 0.04),
+      0 4px 12px -4px hsl(220 20% 20% / 0.08),
+      0 12px 40px -8px hsl(220 20% 20% / 0.12);
+    --shadow-glow:
+      0 0 0 1px hsl(var(--primary) / 0.2),
+      0 4px 16px -6px hsl(var(--primary) / 0.3),
+      0 12px 48px -8px hsl(var(--primary) / 0.2);
+    --shadow-elevated:
+      0 2px 8px hsl(220 20% 20% / 0.06),
+      0 8px 32px -6px hsl(220 20% 20% / 0.1),
+      0 24px 64px -12px hsl(220 20% 20% / 0.14);
   }
 
   .dark {
-    /* Qorong'u rejim — rasmga mos warm dark, oltin neon */
-    --background: 24 12% 7%;
-    --foreground: 40 20% 92%;
-    --card: 24 10% 11%;
-    --card-foreground: 40 20% 92%;
-    --popover: 24 10% 10%;
-    --popover-foreground: 40 20% 92%;
+    /* Qorong'u rejim — chuqur warm dark, oltin neon */
+    --background: 24 15% 5%;
+    --foreground: 38 18% 92%;
+    --card: 24 12% 9%;
+    --card-foreground: 38 18% 92%;
+    --popover: 24 12% 8%;
+    --popover-foreground: 38 18% 92%;
 
-    --primary: 42 90% 50%;
-    --primary-glow: 42 95% 58%;
-    --primary-foreground: 24 12% 7%;
+    --primary: 42 92% 50%;
+    --primary-glow: 42 95% 60%;
+    --primary-foreground: 24 15% 5%;
 
-    --secondary: 24 8% 16%;
-    --secondary-foreground: 40 15% 90%;
+    --secondary: 24 10% 14%;
+    --secondary-foreground: 38 14% 90%;
 
-    --muted: 24 8% 13%;
-    --muted-foreground: 40 8% 58%;
+    --muted: 24 10% 11%;
+    --muted-foreground: 38 8% 55%;
 
-    --accent: 42 90% 55%;
-    --accent-foreground: 24 12% 7%;
+    --accent: 42 92% 55%;
+    --accent-foreground: 24 15% 5%;
 
-    --pop: 42 85% 56%;
-    --pop-foreground: 24 12% 7%;
-    --pop-2: 36 85% 54%;
+    --pop: 42 88% 56%;
+    --pop-foreground: 24 15% 5%;
+    --pop-2: 36 88% 54%;
 
-    --destructive: 0 70% 50%;
+    --destructive: 0 68% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 24 8% 18%;
-    --input: 24 8% 15%;
-    --ring: 42 90% 50%;
+    --border: 24 10% 16%;
+    --input: 24 10% 13%;
+    --ring: 42 92% 50%;
     --radius: 1rem;
 
-    --aurora-1: 42 85% 45%;
-    --aurora-2: 36 80% 42%;
-    --aurora-3: 48 80% 48%;
+    --aurora-1: 42 85% 42%;
+    --aurora-2: 36 80% 40%;
+    --aurora-3: 48 80% 45%;
 
-    --grain-opacity: 0.03;
-    --shadow-soft: 
-      0 2px 16px -4px hsl(0 0% 0% / 0.6),
-      0 12px 40px -8px hsl(0 0% 0% / 0.7);
-    --shadow-glow: 
+    --grain-opacity: 0.025;
+    --shadow-soft:
+      0 1px 3px hsl(0 0% 0% / 0.3),
+      0 4px 12px -4px hsl(0 0% 0% / 0.5),
+      0 12px 40px -8px hsl(0 0% 0% / 0.6);
+    --shadow-glow:
       0 0 0 1px hsl(var(--primary) / 0.3),
-      0 0 48px -8px hsl(var(--primary) / 0.55);
+      0 4px 20px -6px hsl(var(--primary) / 0.4),
+      0 12px 48px -8px hsl(var(--primary) / 0.25);
+    --shadow-elevated:
+      0 2px 8px hsl(0 0% 0% / 0.4),
+      0 8px 32px -6px hsl(0 0% 0% / 0.55),
+      0 24px 64px -12px hsl(0 0% 0% / 0.65);
   }
 }
 
@@ -132,27 +145,28 @@
     isolation: isolate;
   }
 
-  /* Asosiy fon aurorasi — oltin tuman */
+  /* Asosiy fon aurorasi — oltin tuman (desktop only) */
   body::before {
     content: '';
     position: fixed;
-    inset: -30%;
+    inset: -20%;
     z-index: -2;
     pointer-events: none;
-    opacity: 0.35;
+    opacity: 0.3;
     background:
-      radial-gradient(40% 35% at 10% 15%, hsl(var(--aurora-1) / 0.2), transparent 70%),
-      radial-gradient(45% 40% at 90% 10%, hsl(var(--aurora-3) / 0.18), transparent 70%),
-      radial-gradient(50% 45% at 50% 100%, hsl(var(--aurora-2) / 0.15), transparent 70%);
-    filter: blur(80px) saturate(120%);
-    animation: aurora-dance 25s ease-in-out infinite alternate;
+      radial-gradient(35% 30% at 10% 15%, hsl(var(--aurora-1) / 0.18), transparent 70%),
+      radial-gradient(40% 35% at 90% 10%, hsl(var(--aurora-3) / 0.15), transparent 70%),
+      radial-gradient(45% 40% at 50% 100%, hsl(var(--aurora-2) / 0.12), transparent 70%);
+    filter: blur(60px) saturate(110%);
+    animation: aurora-dance 30s ease-in-out infinite alternate;
+    will-change: transform;
   }
 
   .dark body::before {
-    opacity: 0.65;
+    opacity: 0.5;
   }
 
-  /* Donador tekstura — qimmatbaho qog'oz effekti */
+  /* Donador tekstura — qimmatbaho qog'oz effekti (desktop only) */
   body::after {
     content: '';
     position: fixed;
@@ -160,9 +174,8 @@
     z-index: -1;
     pointer-events: none;
     opacity: var(--grain-opacity);
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 140px 140px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
   }
 
   ::selection {
@@ -210,6 +223,8 @@
     display: none;
   }
 
+  /* ============ GLASS ============ */
+
   /* Yumshoq shisha — ko'p qatlamli, nafis */
   .glass {
     @apply backdrop-blur-2xl border;
@@ -225,19 +240,35 @@
     box-shadow: var(--shadow-soft);
   }
 
+  .glass-premium {
+    @apply backdrop-blur-2xl border;
+    background: linear-gradient(145deg, hsl(var(--card) / 0.6), hsl(var(--card) / 0.4));
+    border-color: hsl(var(--primary) / 0.15);
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* ============ CHAT WINDOW ============ */
+
   /* Chat maydoni — shisha, yumshoq */
   .chat-window-messages-area {
-    @apply flex-1 overflow-y-auto relative px-4;
+    @apply flex-1 overflow-y-auto overscroll-contain;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    content-visibility: auto;
   }
 
   .chat-window-scroll-button {
     @apply absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full p-2;
-    background: hsl(var(--card) / 0.8);
+    background: hsl(var(--card) / 0.85);
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid hsl(var(--border) / 0.6);
     box-shadow: var(--shadow-glow);
     animation: pulse-soft 2.8s ease-in-out infinite;
     transition: transform 0.2s ease;
+    will-change: transform;
   }
 
   .chat-window-scroll-button:hover {
@@ -246,25 +277,33 @@
 
   /* Input panel — "jonli" chegara bilan */
   .chat-window-input-panel {
-    @apply border-t backdrop-blur-2xl relative p-4;
+    @apply border-t backdrop-blur-2xl relative;
     border-color: hsl(var(--border) / 0.7);
-    background: linear-gradient(180deg, hsl(var(--background) / 0.2), hsl(var(--background) / 0.95));
+    background: linear-gradient(180deg, hsl(var(--background) / 0.3), hsl(var(--background) / 0.98));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
   }
 
   .chat-window-input-panel::before {
     content: '';
     position: absolute;
     inset: 0 0 auto 0;
-    height: 2px;
-    background: linear-gradient(90deg, 
-      transparent, 
-      hsl(var(--primary) / 0.5), 
-      hsl(var(--pop) / 0.4), 
-      hsl(var(--accent) / 0.3), 
-      transparent
+    height: 1.5px;
+    background: linear-gradient(90deg,
+      transparent 5%,
+      hsl(var(--primary) / 0.5),
+      hsl(var(--pop) / 0.4),
+      hsl(var(--accent) / 0.3),
+      transparent 95%
     );
-    filter: blur(1px);
+    filter: blur(0.5px);
+    pointer-events: none;
   }
+
+  /* ============ INPUT SHELL ============ */
 
   /* Input konteyneri — fokusda jonlanadigan chegara */
   .input-shell {
@@ -305,68 +344,111 @@
     transform: scale(1.005);
   }
 
+  /* ============ MESSAGE BUBBLES ============ */
+
   /* Xabar qobiqlari — nafis, yumshoq */
   .chat-message-shell {
     display: flex;
     gap: 0.75rem;
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 1.25rem;
-    transition: all 0.25s ease;
-    animation: message-slide 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    transition: all 0.2s ease;
+    animation: message-slide 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   .chat-message-shell:hover {
-    background: hsl(var(--primary) / 0.05);
+    background: hsl(var(--primary) / 0.04);
     transform: translateX(3px);
   }
 
   .message-bubble-content {
     @apply relative rounded-2xl px-4 py-3 max-w-3xl;
-    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     transform-style: preserve-3d;
   }
 
   .message-bubble-content:hover {
-    transform: translateY(-2px) scale(1.005);
+    transform: translateY(-1px) scale(1.003);
   }
 
-  /* Foydalanuvchi xabari — oltin gradient, porlash */
+  /* Foydalanuvchi xabari — premium gradient + glow */
   .message-bubble-user {
     color: hsl(var(--primary-foreground));
-    background: linear-gradient(145deg, 
-      hsl(var(--primary)), 
-      hsl(var(--primary-glow) / 0.9), 
-      hsl(var(--primary) / 0.8)
+    background: linear-gradient(145deg,
+      hsl(var(--primary) / 0.95),
+      hsl(var(--primary-glow) / 0.85),
+      hsl(var(--primary) / 0.75)
     );
     border-top-right-radius: 0.3rem;
     box-shadow: var(--shadow-glow);
+    position: relative;
+    overflow: hidden;
   }
 
-  /* Assistant xabari — shisha, yengil */
+  .message-bubble-user::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg,
+      transparent 30%,
+      hsl(0 0% 100% / 0.1) 45%,
+      transparent 60%
+    );
+    pointer-events: none;
+  }
+
+  /* Assistant xabari — glassmorphism + subtle border glow */
   .message-bubble-assistant {
     @apply relative rounded-tl-sm;
-    background: 
-      linear-gradient(hsl(var(--card) / 0.9), hsl(var(--card) / 0.9)) padding-box,
-      linear-gradient(145deg, hsl(var(--primary) / 0.3), hsl(var(--pop) / 0.2)) border-box;
+    background:
+      linear-gradient(hsl(var(--card) / 0.92), hsl(var(--card) / 0.92)) padding-box,
+      linear-gradient(145deg, hsl(var(--primary) / 0.25), hsl(var(--pop) / 0.15)) border-box;
     border: 1px solid transparent;
     box-shadow: var(--shadow-soft);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    position: relative;
+  }
+
+  .message-bubble-assistant::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(145deg, hsl(var(--primary) / 0.15), hsl(var(--pop) / 0.08));
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .message-bubble-assistant:hover::before {
+    opacity: 1;
   }
 
   .message-bubble-actions {
     @apply flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 mt-1;
   }
 
-  .message-bubble-actions:hover {
-    opacity: 1;
+  .message-bubble-actions > button {
+    @apply transition-all duration-150;
   }
 
-  /* Gradient matn — oltin oqim */
+  .message-bubble-actions > button:hover {
+    @apply text-foreground;
+    transform: scale(1.1);
+  }
+
+  .message-bubble-actions > button:active {
+    transform: scale(0.92);
+  }
+
+  /* ============ GRADIENT TEXT ============ */
+
   .gradient-text {
-    background: linear-gradient(90deg, 
-      hsl(var(--primary)), 
-      hsl(var(--accent)) 40%, 
-      hsl(var(--pop)) 70%, 
+    background: linear-gradient(90deg,
+      hsl(var(--primary)),
+      hsl(var(--accent)) 40%,
+      hsl(var(--pop)) 70%,
       hsl(var(--primary))
     );
     background-size: 300% auto;
@@ -374,29 +456,38 @@
     animation: gradient-flow 8s ease infinite;
   }
 
-  /* Shimmer effekti — oltin */
+  /* ============ SHIMMER ============ */
+
   .shimmer {
-    background: linear-gradient(90deg, 
-      transparent 0%, 
-      hsl(var(--primary) / 0.12) 40%, 
-      hsl(var(--pop) / 0.08) 60%, 
+    background: linear-gradient(90deg,
+      transparent 0%,
+      hsl(var(--primary) / 0.12) 40%,
+      hsl(var(--pop) / 0.08) 60%,
       transparent 100%
     );
     background-size: 250% 100%;
     animation: shimmer 2s ease-in-out infinite;
   }
 
-  /* Nurli halqa */
+  /* ============ GLOW RING ============ */
+
   .glow-ring {
     box-shadow: var(--shadow-glow);
   }
 
-  /* Yorqin badge — oltin gradient */
+  .elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  /* ============ BADGE ============ */
+
   .pop-badge {
     background: linear-gradient(145deg, hsl(var(--pop)), hsl(var(--pop-2)));
     color: hsl(var(--pop-foreground));
     box-shadow: 0 4px 16px -4px hsl(var(--pop) / 0.4);
   }
+
+  /* ============ BUTTONS ============ */
 
   /* Asosiy tugma — oltin, mikro-interaksiya */
   .btn-primary-vivid {
@@ -404,7 +495,7 @@
     color: hsl(var(--primary-foreground));
     background: linear-gradient(145deg, hsl(var(--primary)), hsl(var(--primary-glow)));
     box-shadow: var(--shadow-glow);
-    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .btn-primary-vivid:hover {
@@ -420,14 +511,14 @@
     content: '';
     position: absolute;
     inset: -50%;
-    background: linear-gradient(120deg, 
-      transparent 20%, 
-      hsl(0 0% 100% / 0.25) 35%, 
+    background: linear-gradient(120deg,
+      transparent 20%,
+      hsl(0 0% 100% / 0.25) 35%,
       transparent 50%
     );
     background-size: 300% 100%;
     background-position: 150% 0;
-    transition: all 0.6s ease;
+    transition: all 0.5s ease;
     transform: rotate(15deg);
   }
 
@@ -435,14 +526,36 @@
     background-position: -50% 0;
   }
 
-  /* Avatar halqasi — aylanuvchi oltin gradient */
+  /* Secondary button — glass */
+  .btn-glass {
+    @apply relative overflow-hidden rounded-xl px-4 py-2 font-medium select-none;
+    background: hsl(var(--card) / 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.6);
+    box-shadow: var(--shadow-soft);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .btn-glass:hover {
+    background: hsl(var(--card) / 0.8);
+    border-color: hsl(var(--primary) / 0.3);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .btn-glass:active {
+    transform: scale(0.97);
+  }
+
+  /* ============ AVATAR ============ */
+
   .avatar-ring {
     @apply relative rounded-full p-[2.5px];
     background: conic-gradient(
-      from var(--border-glow), 
-      hsl(var(--primary)), 
-      hsl(var(--accent)), 
-      hsl(var(--pop)), 
+      from var(--border-glow),
+      hsl(var(--primary)),
+      hsl(var(--accent)),
+      hsl(var(--pop)),
       hsl(var(--primary))
     );
     animation: border-rotate 6s linear infinite;
@@ -452,7 +565,8 @@
     animation: border-rotate 6s linear infinite, pulse-soft 3s ease-in-out infinite;
   }
 
-  /* Yozish indikatori — 3 nuqta oltin */
+  /* ============ TYPING INDICATOR ============ */
+
   .typing-dots {
     @apply inline-flex items-center gap-1.5 px-3 py-2;
   }
@@ -469,7 +583,23 @@
   .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
   .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
 
-  /* Karta ustida sirg'aluvchi nur */
+  /* ============ PRESENCE DOT ============ */
+
+  .presence-dot {
+    @apply inline-block rounded-full;
+    width: 8px;
+    height: 8px;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 6px hsl(var(--primary) / 0.6);
+  }
+
+  .presence-dot-offline {
+    background: hsl(var(--muted-foreground));
+    box-shadow: none;
+  }
+
+  /* ============ CARD SHEEN ============ */
+
   .card-sheen {
     @apply relative overflow-hidden;
   }
@@ -478,26 +608,45 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(105deg, 
-      transparent 25%, 
-      hsl(0 0% 100% / 0.12) 40%, 
-      hsl(var(--pop) / 0.08) 48%, 
+    background: linear-gradient(105deg,
+      transparent 25%,
+      hsl(0 0% 100% / 0.12) 40%,
+      hsl(var(--pop) / 0.08) 48%,
       transparent 60%
     );
     background-size: 280% 100%;
     background-position: 180% 0;
-    transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: none;
   }
 
   .card-sheen:hover::after {
     background-position: -50% 0;
   }
+
+  /* ============ ENTER / EXIT ANIMATIONS ============ */
+
+  .animate-enter {
+    animation: message-slide 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-enter-fast {
+    animation: fade-scale-in 0.2s ease-out both;
+  }
+
+  .animate-exit {
+    animation: fade-scale-out 0.15s ease-in both;
+  }
 }
 
-/* Markdown — zamonaviy, oltin aksentli */
+/* ============ MARKDOWN ============ */
+
 .prose-chat {
   @apply prose prose-sm dark:prose-invert max-w-none;
+}
+
+.prose-chat p {
+  @apply leading-relaxed;
 }
 
 .prose-chat pre {
@@ -531,8 +680,8 @@
 
 .prose-chat th {
   @apply font-semibold;
-  background: linear-gradient(90deg, 
-    hsl(var(--primary) / 0.12), 
+  background: linear-gradient(90deg,
+    hsl(var(--primary) / 0.12),
     hsl(var(--pop) / 0.08)
   );
 }
@@ -553,7 +702,8 @@
   text-decoration-color: hsl(var(--pop) / 0.5);
 }
 
-/* Yozish kursori */
+/* ============ TYPING CURSOR ============ */
+
 .typing-cursor::after {
   content: '▊';
   @apply ml-1;
@@ -561,7 +711,8 @@
   animation: blink 1s step-start infinite;
 }
 
-/* Kod nusxalash tugmasi */
+/* ============ CODE BLOCK ============ */
+
 .code-block-wrapper {
   position: relative;
 }
@@ -570,6 +721,7 @@
   @apply absolute top-2.5 right-2.5 rounded-lg opacity-0 transition-all duration-200 px-2.5 py-1.5 text-sm;
   background: hsl(var(--primary) / 0.15);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   border: 1px solid hsl(var(--primary) / 0.2);
 }
 
@@ -582,7 +734,8 @@
   @apply opacity-100;
 }
 
-/* Animatsiyalar — yumshoq, "nafas oluvchi" */
+/* ============ KEYFRAMES ============ */
+
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
@@ -594,13 +747,35 @@
 }
 
 @keyframes message-slide {
-  from { 
-    opacity: 0; 
-    transform: translateY(12px) scale(0.97); 
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
   }
-  to { 
-    opacity: 1; 
-    transform: translateY(0) scale(1); 
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fade-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
   }
 }
 
@@ -609,14 +784,14 @@
 }
 
 @keyframes aurora-dance {
-  0% { 
-    transform: translate3d(-3%, -2%, 0) rotate(-2deg); 
+  0% {
+    transform: translate3d(-2%, -1%, 0) rotate(-1deg);
   }
   50% {
-    transform: translate3d(0%, 1%, 0) rotate(1deg);
+    transform: translate3d(0%, 0.5%, 0) rotate(0.5deg);
   }
-  100% { 
-    transform: translate3d(3%, 2%, 0) rotate(3deg); 
+  100% {
+    transform: translate3d(2%, 1%, 0) rotate(1deg);
   }
 }
 
@@ -625,42 +800,36 @@
 }
 
 @keyframes pulse-soft {
-  0%, 100% { 
-    box-shadow: var(--shadow-glow); 
+  0%, 100% {
+    box-shadow: var(--shadow-glow);
   }
-  50% { 
-    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.35), 
-                0 0 56px -6px hsl(var(--primary) / 0.65); 
+  50% {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.35),
+                0 0 48px -4px hsl(var(--primary) / 0.55);
   }
 }
 
 @keyframes dot-bounce {
-  0%, 60%, 100% { 
-    transform: translateY(0); 
-    opacity: 0.4; 
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
   }
-  30% { 
-    transform: translateY(-5px); 
-    opacity: 1; 
+  30% {
+    transform: translateY(-5px);
+    opacity: 1;
   }
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
 }
 
 /* Harakat sezgirligi kamaytirilganlar uchun */
 @media (prefers-reduced-motion: reduce) {
-  body::before,
-  .chat-message-shell,
-  .gradient-text,
-  .shimmer,
-  .avatar-ring,
-  .avatar-ring-idle,
-  .chat-window-scroll-button,
-  .typing-dots span,
-  .input-shell:focus-within::before,
-  .typing-cursor::after,
-  .btn-primary-vivid::after,
-  .card-sheen::after {
-    animation: none !important;
-    transition: none !important;
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
@@ -668,28 +837,43 @@
    MOBIL OPTIMIZATSIYALAR
    ============================================================ */
 
-/* Chat window — mobilda to'g'ri o'lcham */
 @media (max-width: 767px) {
+  /* Heavy effektlarni o'chirish — GPU yuklamaslik uchun */
+  body::before {
+    display: none !important;
+  }
+
+  body::after {
+    display: none !important;
+  }
+
   .chat-window-messages-area {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-    padding-bottom: env(safe-area-inset-bottom);
-    overflow-y: auto;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-bottom: 0.5rem;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 
   .chat-window-input-panel {
-    padding: 0.75rem;
-    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    padding: 0.5rem;
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: hsl(var(--background) / 0.98);
     position: sticky;
     bottom: 0;
-    background: hsl(var(--background));
-    border-top: 1px solid hsl(var(--border));
+    box-shadow: 0 -4px 20px hsl(0 0% 0% / 0.08);
+  }
+
+  .chat-window-input-panel::before {
+    height: 1px;
+    opacity: 0.8;
   }
 
   /* Xabar bubble mobilda kengroq */
   .message-bubble-content {
-    max-width: calc(100vw - 4rem) !important;
+    max-width: calc(100vw - 3.5rem) !important;
   }
 
   /* Hover effektlarni mobildan olib tashlash */
@@ -702,10 +886,27 @@
     transform: none;
   }
 
+  .message-bubble-assistant:hover::before {
+    opacity: 0;
+  }
+
+  .message-bubble-actions {
+    opacity: 0.8;
+  }
+
   /* Kod bloki — mobilda scroll */
   .code-block-wrapper {
-    max-width: calc(100vw - 2.5rem);
+    max-width: calc(100vw - 2rem);
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .code-copy-btn {
+    opacity: 0.9;
+  }
+
+  .code-block-wrapper:hover .code-copy-btn {
+    opacity: 0.9;
   }
 
   /* Input mobilda kichikroq */
@@ -716,13 +917,55 @@
 
   /* Scroll button mobilda pastroq */
   .chat-window-scroll-button {
-    bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+    bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .animation-aurora {
+    animation: none !important;
+  }
+
+  .input-shell:focus-within {
+    transform: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3);
+  }
+
+  .input-shell:focus-within::before {
+    animation: none;
+    opacity: 0.6;
+  }
+
+  .chat-message-shell {
+    animation-duration: 0.2s;
+    padding: 0.4rem 0.5rem;
+  }
+
+  /* Blur effektlarni mobile da o'chirish */
+  .glass, .glass-strong, .glass-premium {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* Touch qurilmalarda active state */
+  .chat-message-shell:active {
+    background: hsl(var(--primary) / 0.06);
+  }
+
+  .message-bubble-user:active {
+    transform: scale(0.98);
+  }
+
+  .message-bubble-assistant:active {
+    transform: scale(0.99);
   }
 }
 
+/* ============================================================
+   iOS / SAFARI SPECIFIC FIXES
+   ============================================================ */
+
 /* iOS Safari 100vh muammosi */
 @supports (-webkit-touch-callout: none) {
-  .h-screen {
+  .ios-h-fix {
     height: -webkit-fill-available;
   }
 }
@@ -740,5 +983,24 @@ input, textarea, select {
 @media (min-width: 768px) {
   input, textarea, select {
     font-size: inherit !important;
+  }
+}
+
+/* ============================================================
+   DESKTOP ONLY — premium effektlar
+   ============================================================ */
+
+@media (min-width: 768px) {
+  .input-shell::before {
+    transition-duration: 0.6s;
+  }
+
+  .message-bubble-actions {
+    transition: opacity 0.25s ease, transform 0.2s ease;
+    transform: translateY(2px);
+  }
+
+  .group:hover .message-bubble-actions {
+    transform: translateY(0);
   }
 }

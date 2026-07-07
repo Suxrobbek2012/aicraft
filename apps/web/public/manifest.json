@@ -4,8 +4,8 @@
   "description": "Your intelligent AI assistant",
   "start_url": "/chat",
   "display": "standalone",
-  "background_color": "#111111",
-  "theme_color": "#22c55e",
+  "background_color": "#0f0b07",
+  "theme_color": "#b8860b",
   "orientation": "portrait-primary",
   "icons": [
     { "src": "/icons/icon-72.png", "sizes": "72x72", "type": "image/png" },

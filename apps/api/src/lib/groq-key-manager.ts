@@ -12,6 +12,7 @@ interface KeyState {
   exhausted: boolean
   exhaustedAt: number | null
   failCount: number
+  temporary?: boolean // 1 daqiqa cool-down, 24 soat emas
 }
 
 class GroqKeyManager {
@@ -67,7 +68,7 @@ class GroqKeyManager {
   }
 
   /** 429 yoki rate limit xatoligida keyni exhausted deb belgilash va keyingiga o'tish */
-  markCurrentExhausted(errorMessage?: string): string | null {
+  markCurrentExhausted(errorMessage?: string, options?: { temporary?: boolean }): string | null {
     if (this.keys.length === 0) return null
 
     const current = this.keys[this.currentIndex]
@@ -75,8 +76,9 @@ class GroqKeyManager {
       current.exhausted = true
       current.exhaustedAt = Date.now()
       current.failCount += 1
+      current.temporary = options?.temporary ?? false
       logger.warn(
-        `⚠️  Groq key #${this.currentIndex + 1} exhausted. Error: ${errorMessage ?? 'rate limit'}`
+        `⚠️  Groq key #${this.currentIndex + 1} exhausted${current.temporary ? ' (temporary)' : ''}. Error: ${errorMessage ?? 'rate limit'}`
       )
     }
 
@@ -94,15 +96,17 @@ class GroqKeyManager {
     return null
   }
 
-  /** 24 soat o'tgan keylarni qayta aktivlashtirish */
+  /** Keylarni qayta aktivlashtirish: 24 soat (to'liq exhausted) yoki 1 daqiqa (temporary) */
   private resetExpiredKeys() {
     const now = Date.now()
     for (const state of this.keys) {
       if (state.exhausted && state.exhaustedAt) {
-        if (now - state.exhaustedAt >= this.DAILY_RESET_MS) {
+        const cooldownMs = state.temporary ? 60_000 : this.DAILY_RESET_MS
+        if (now - state.exhaustedAt >= cooldownMs) {
           state.exhausted = false
           state.exhaustedAt = null
-          logger.info('🔁 Groq key reset after 24h')
+          state.temporary = false
+          logger.info(`🔁 Groq key reset after ${state.temporary ? '1m' : '24h'}`)
         }
       }
     }
@@ -115,8 +119,12 @@ class GroqKeyManager {
     return (
       status === 429 ||
       status === 413 ||
+      status === 401 ||
       msg.includes('429') ||
       msg.includes('413') ||
+      msg.includes('401') ||
+      msg.includes('Invalid API Key') ||
+      msg.includes('invalid_api_key') ||
       msg.includes('rate limit') ||
       msg.includes('Rate limit') ||
       msg.includes('Request too large') ||
@@ -124,6 +132,30 @@ class GroqKeyManager {
       msg.includes('tokens per minute') ||
       msg.includes('TPD') ||
       msg.includes('TPM')
+    )
+  }
+
+  /** So'rov juda katta (413) — message'ni kesish va qayta urinish kerak, keyni almashtirish shart emas */
+  isRequestTooLargeError(error: any): boolean {
+    const msg: string = error?.message ?? error?.toString() ?? ''
+    const status = error?.status ?? error?.response?.status ?? 0
+    return (
+      status === 413 ||
+      msg.includes('413') ||
+      msg.includes('Request too large') ||
+      msg.includes('too large')
+    )
+  }
+
+  /** Vaqtinchalik token limiti (TPM/TPD) — tezda tiklanadi, keyni 24h ga blocklamaslik kerak */
+  isTokenLimitError(error: any): boolean {
+    const msg: string = error?.message ?? error?.toString() ?? ''
+    return (
+      msg.includes('tokens per minute') ||
+      msg.includes('tokens per day') ||
+      msg.includes('TPM') ||
+      msg.includes('TPD') ||
+      msg.includes('token rate limit')
     )
   }
 

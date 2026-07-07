@@ -49,15 +49,28 @@ export class GroqProvider extends BaseAIProvider {
     return messages.map((msg) => {
       if (msg.role === 'system') return { role: 'system', content: msg.content as string }
       if (msg.role === 'assistant') {
-        return { role: 'assistant', content: typeof msg.content === 'string' ? msg.content : '' }
+        // Check if there are tool_calls or function calls in assistant message
+        const content = typeof msg.content === 'string' ? msg.content : ''
+        return { role: 'assistant', content }
       }
       if (typeof msg.content === 'string') return { role: 'user', content: msg.content }
-      // multipart — groq only supports text parts
-      const text = (msg.content as Array<{ type: string; text?: string }>)
-        .filter((p) => p.type === 'text')
-        .map((p) => p.text ?? '')
-        .join('\n')
-      return { role: 'user', content: text }
+
+      // Multipart content — rasm va boshqa turlarni ham qo'llab-quvvatlash
+      const parts = msg.content as Array<{ type: string; text?: string; image_url?: { url: string } }>
+      const contentParts: OpenAI.ChatCompletionContentPart[] = []
+
+      for (const part of parts) {
+        if (part.type === 'text' && part.text) {
+          contentParts.push({ type: 'text', text: part.text })
+        } else if (part.type === 'image_url' && part.image_url?.url) {
+          contentParts.push({
+            type: 'image_url',
+            image_url: { url: part.image_url.url, detail: 'auto' },
+          })
+        }
+      }
+
+      return { role: 'user', content: contentParts }
     })
   }
 

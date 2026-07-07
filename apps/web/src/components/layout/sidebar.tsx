@@ -7,6 +7,7 @@ import {
   MessageSquarePlus, Search, Settings, LogOut, ChevronDown,
   Pin, Trash2, Archive, Edit2, MoreHorizontal, Folder, FolderPlus,
   Sparkles, Crown, Zap, Menu, X, Bot, Download, Check, ChevronRight,
+  Sun, Moon,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/auth.store'
 import { useChatStore, type ConversationFolder } from '@/store/chat.store'
@@ -25,6 +26,7 @@ import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
 import type { Conversation } from '@go-ai/shared'
 import { AicraftLogo } from '@/components/ui/aicraft-logo'
+import { ThemeToggle } from '@/components/layout/theme-toggle'
 
 interface SidebarProps {
   collapsed?: boolean
@@ -219,9 +221,12 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-3 pt-3 pb-2">
           <AicraftLogo size={28} />
-          <Button variant="ghost" size="icon-sm" onClick={onToggle} className="text-muted-foreground">
-            <X className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <Button variant="ghost" size="icon-sm" onClick={onToggle} className="text-muted-foreground">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Action Panel */}

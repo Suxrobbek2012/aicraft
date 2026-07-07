@@ -35,6 +35,7 @@ import pluginRoutes from './routes/plugin.routes'
 import webhookRoutes from './routes/webhook.routes'
 import healthRoutes from './routes/health.routes'
 import imageRoutes from './routes/image.routes'
+import calculatorRoutes from './routes/calculator.routes'
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -171,6 +172,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(pluginRoutes, { prefix: '/api/v1/plugins' })
   await app.register(adminRoutes, { prefix: '/api/v1/admin' })
   await app.register(imageRoutes, { prefix: '/api/v1/images' })
+  await app.register(calculatorRoutes, { prefix: '/api/v1/chat' })
 
   // ─── Error Handler ────────────────────────────────────────────────────────────
   app.setErrorHandler(async (error, request, reply) => {

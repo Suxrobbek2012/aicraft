@@ -273,7 +273,7 @@ export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
 
             {/* Character count */}
             {value.length > 500 && (
-              <span className={cn('text-xs', value.length > 8000 ? 'text-destructive' : 'text-muted-foreground')}>
+              <span className={cn('text-xs', value.length > 100000 ? 'text-destructive' : 'text-muted-foreground')}>
                 {value.length.toLocaleString()}
               </span>
             )}

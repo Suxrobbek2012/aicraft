@@ -9,7 +9,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import {
   Copy, Check, RefreshCw, ThumbsUp, ThumbsDown,
-  User, Bot, ChevronDown, ChevronUp, Volume2,
+  User, Bot, ChevronDown, ChevronUp, Volume2, Maximize2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -20,6 +20,7 @@ import { useAuthStore } from '@/store/auth.store'
 import copy from 'copy-to-clipboard'
 import toast from 'react-hot-toast'
 import type { Message } from '@go-ai/shared'
+import { ImageLightbox } from '@/components/chat/image-lightbox'
 
 interface MessageBubbleProps {
   message: Message
@@ -38,6 +39,9 @@ export const MessageBubble = memo(function MessageBubble({
   const isUser = message.role === 'user'
   const [copied, setCopied] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxSrc, setLightboxSrc] = useState('')
+  const [lightboxAlt, setLightboxAlt] = useState('')
 
   const handleCopy = () => {
     copy(message.content)
@@ -110,7 +114,14 @@ export const MessageBubble = memo(function MessageBubble({
                 {/* Streaming paytida plain text — ReactMarkdown ni skip qilib freeze oldini olamiz */}
                 {isStreaming
                   ? <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
-                  : <MarkdownContent content={message.content} />
+                  : <MarkdownContent
+                      content={message.content}
+                      onImageClick={(src, alt) => {
+                        setLightboxSrc(src)
+                        setLightboxAlt(alt)
+                        setLightboxOpen(true)
+                      }}
+                    />
                 }
               </div>
             )}
@@ -205,6 +216,13 @@ export const MessageBubble = memo(function MessageBubble({
           )}
         </div>
       </motion.div>
+
+      <ImageLightbox
+        src={lightboxSrc}
+        alt={lightboxAlt}
+        open={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+      />
     </TooltipProvider>
   )
 })
@@ -219,7 +237,7 @@ function AttachmentPreview({ attachment }: { attachment: { id: string; name: str
   )
 }
 
-function MarkdownContent({ content }: { content: string }) {
+function MarkdownContent({ content, onImageClick }: { content: string; onImageClick?: (src: string, alt: string) => void }) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -265,21 +283,28 @@ function MarkdownContent({ content }: { content: string }) {
         },
         img({ src, alt }) {
           if (!src) return null
-          // Handle both external URLs and data URLs
           const isData = src.startsWith('data:')
           const isExternal = src.startsWith('http')
           if (!isData && !isExternal) return null
+          const handleClick = () => onImageClick?.(src, alt ?? 'Generated image')
           return (
-            <span className="block my-3">
+            <span className="block my-3 group/img relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={src}
                 alt={alt ?? 'Generated image'}
-                className="rounded-xl max-w-full max-h-[600px] object-contain border border-border shadow-lg"
+                className="rounded-xl max-w-full max-h-[600px] object-contain border border-border shadow-lg cursor-zoom-in"
                 loading="lazy"
                 referrerPolicy="no-referrer"
                 crossOrigin="anonymous"
+                onClick={handleClick}
               />
+              <button
+                onClick={handleClick}
+                className="absolute top-2 right-2 opacity-0 group-hover/img:opacity-100 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 transition-all duration-200"
+              >
+                <Maximize2 className="h-3.5 w-3.5" />
+              </button>
               {alt && <span className="block text-xs text-muted-foreground mt-1 italic">{alt}</span>}
             </span>
           )
